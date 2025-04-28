@@ -1,0 +1,15 @@
+{
+  "folders": [
+	{
+		"name": "js-base",
+		"path": "../js-base"
+	},
+	{
+		"name": "Warhammer",
+		"path": "."
+	}
+],
+  "settings": {
+    "liveServer.settings.multiRootWorkspaceName": "tuto-vue"
+  }
+}
