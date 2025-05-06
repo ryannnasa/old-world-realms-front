@@ -1,14 +1,14 @@
 <template>
   <v-app-bar dark class="my-app-bar">
     <div class="d-flex align-center justify-space-between w-100">
-      <a href="/Accueil" class="logo-link">
+      <a href="/homepage" class="logo-link">
         <img src="/img/Logo Old World Realms.png" alt="Logo" class="logo">
       </a>
 
       <v-btn>Règles du Jeu</v-btn>
-      <v-btn text to="/armee">Armées</v-btn>
+      <v-btn text to="/allunits">Armées</v-btn>
       <v-btn text>Listes d'Armées</v-btn>
-      <v-btn text to="/rapports-batailles" router>Rapports de Batailles</v-btn>
+      <v-btn text to="/allbattlereports" router>Rapports de Batailles</v-btn>
 
       <v-spacer></v-spacer>
       <div ref="searchContainer" class="search-container">

@@ -53,8 +53,8 @@
               <v-select
                 v-model="player.army"
                 :items="armies"
-                item-title="nomArmee"
-                item-value="idNomArmee"
+                item-title="armyName"
+                item-value="idArmyName"
                 label="Armée"
                 outlined
                 class="input-field"
@@ -62,8 +62,8 @@
               <v-select
                 v-model="player.composition"
                 :items="armyCompositions"
-                item-title="nomCompositionArmee"
-                item-value="idCompositionArmee"
+                item-title="armyCompositionName"
+                item-value="idArmyCompositiob"
                 label="Composition d'Armée"
                 outlined
                 class="input-field"
@@ -88,16 +88,16 @@
 </template>
 
 <script setup>
-import { useArmeeStore } from '@/stores/armee';
+import { useArmyNameStore } from '@/stores/armyName';
 import { ref, onMounted, watch, computed } from 'vue';
-const armeeStore = useArmeeStore()
-armeeStore.getArmee()
+const armyNameStore = useArmyNameStore()
+armyNameStore.getArmyName()
 const battleTitle = ref('');
 const description = ref('');
 const selectedScenario = ref('');
 const customScenario = ref('');
 const scenarios = ref(['Bataille Ouverte', 'Scénario Officiel', 'Autre']);
-const armies = computed(()=>{return armeeStore.armee});
+const armiesName = computed(()=>{return armyNameStore.armyName});
 const armyCompositions = ref([]);
 const alliances = ['Ordre', 'Chaos', 'Destruction', 'Aucune'];
 
@@ -138,7 +138,7 @@ const playerPairs = computed(() => {
 
 
 function fetchArmyCompositions() {
-  fetch('http://localhost:8080/compositionarmee')
+  fetch('http://localhost:8080/armycomposition')
     .then(res => res.json())
     .then(data => armyCompositions.value = data)
     .catch(err => console.error("Erreur API : ", err));

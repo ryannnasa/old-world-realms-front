@@ -3,7 +3,7 @@
     <v-container>
       <!-- Bouton de création -->
       <div class="button-container">
-        <v-btn text to="/creer-rapports-batailles" class="mb-4 button">
+        <v-btn text to="/createabattlereport" class="mb-4 button">
           <v-icon left>mdi-plus</v-icon>
           Créer un nouveau rapport
         </v-btn>
@@ -37,7 +37,7 @@
       <!-- Liste des rapports -->
       <v-row>
         <v-col v-for="report in filteredReports" :key="report.id" cols="12" md="6" lg="4">
-          <router-link :to="`/mon-rapport-bataille`" style="text-decoration: none;">
+          <router-link :to="`/battlereportview`" style="text-decoration: none;">
             <v-card class="card-container battle-card" hover>
               <div class="battle-images-container">
                 <template v-if="report.players.length > 4">

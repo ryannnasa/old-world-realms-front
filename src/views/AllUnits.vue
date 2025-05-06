@@ -1,12 +1,12 @@
 <template>
   <div class="background, page-container">
     <div class="character-cards">
-      <div class="character-card" v-for="unit in nomUnites" :key="unit.idNomUnite">
+      <div class="character-card" v-for="unit in unitsName" :key="unit.idUnitName">
         <div class="character-image">
           <img src="/public/img/Bretonniens/BREChevaliersDeLaQuete01.jpg" alt="Image personnage" />
         </div>
         <div class="character-details">
-          <h2 class="character-title">{{ unit.nomUnite }}</h2>
+          <h2 class="character-title">{{ unit.unitName }}</h2>
           <h3 class="character-subtitle">Personnage</h3>
           <p class="character-description">Description à compléter...</p>
         </div>
@@ -20,8 +20,8 @@ import { ref, onMounted, watch, computed } from 'vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
-function toAccueil() {
-  router.push('/Accueil');
+function toHomePage() {
+  router.push('/homepage');
 }
 /*
 const props = defineProps(['searchQuery'])
@@ -32,9 +32,9 @@ const searchNomUnite = computed(function(){
 })
 */
 // Stocke les unités récupérées
-const nomUnites = ref<{ idNomUnite: number; nomUnite: string }[]>([]);
+const unitsName = ref<{ idUnitName: number; unitName: string }[]>([]);
 
-watch(nomUnites, () => console.log(nomUnites))
+watch(unitsName, () => console.log(unitsName))
 // Stocke le nom de l'utilisateur
 const JP = ref<string | null>(null);
 
@@ -47,16 +47,16 @@ function fetchUser() {
     .catch(err => console.error("Erreur API:", err));
 }
 */
-function fetchNomUnite() {
-  fetch("http://localhost:8080/nomunite")
+function fetchUnitName() {
+  fetch("http://localhost:8080/unitname")
     .then(res => res.json())
-    .then(data => nomUnites.value = data)
+    .then(data => unitsName.value = data)
     .catch(err => console.error("Erreur API:", err));
 }
 
 // Charger les données au montage du composant
 
-  fetchNomUnite();
+  fetchUnitName();
   //fetchUser();
 
 </script>

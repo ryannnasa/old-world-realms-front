@@ -9,7 +9,7 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router';
 import Navbar from '././components/Navbar.vue';
-import HomeView from './views/HomeView.vue';
+import HomeView from './views/AllUnits.vue';
 import { ref } from 'vue';
 const searchQueryRef = ref("")
 function onSearch(searchQuery : string){
