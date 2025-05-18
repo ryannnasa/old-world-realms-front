@@ -5,7 +5,7 @@ export const useBattleReportStore = defineStore('battleReport', {
     state: () => ({ battleReport: []}),
     actions: {
       getBattleReport() {
-        fetch('http://localhost:8080/armycomposition')
+        fetch('http://localhost:8080/battlereport')
         .then(res => res.json())
         .then(data => this.battleReport = data)
         .catch(err => console.error('Erreur API: ', err));
