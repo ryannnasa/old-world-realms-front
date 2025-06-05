@@ -9,6 +9,22 @@ import { createVuetify } from 'vuetify'
 import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
 import '@mdi/font/css/materialdesignicons.css'
+import Keycloak from 'keycloak-js'
+import keycloakConfig from './keycloak-config'
+
+const keycloak = new Keycloak(keycloakConfig)
+
+const initOptions = {
+  onLoad: 'login-required',
+  checkLoginIframe: false
+}
+
+keycloak.init(initOptions).then(authenticated => {
+  if (!authenticated) {
+    console.log("User is not authenticated. Redirecting to login page.")
+    keycloak.login()
+  }
+
 
 const app = createApp(App)
 
@@ -66,3 +82,8 @@ app.use(router)
 app.use(vuetify)
 
 app.mount('#app')
+
+
+}).catch(error => {
+  console.error("Failed to initialize Keycloak:", error)
+})
