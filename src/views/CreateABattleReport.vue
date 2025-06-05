@@ -17,8 +17,15 @@
           <v-card class="mb-4 card-container">
             <v-card-title>Scénario</v-card-title>
             <v-card-text>
-              <v-select v-model="selectedScenario" :items="scenarios" label="Choisissez un scénario" outlined class="input-field" />
-              <v-text-field v-if="selectedScenario === 'Autre'" v-model="customScenario" label="Nom du scénario" outlined class="input-field" />
+              <v-select
+                v-model="scenario"
+                :items="scenarios"
+                item-title="scenarioName"
+                item-value="idScenario"
+                label="Choisissez un scénario"
+                outlined
+                class="input-field"
+              />
             </v-card-text>
           </v-card>
         </v-col>
@@ -45,39 +52,49 @@
             class="input-field"
           />
 
-          <v-row v-for="(pair, index) in playerPairs" :key="index" class="mb-6">
-            <v-col v-for="player in pair" :key="player.id" cols="6">
-              <p class="text-h6">Joueur {{ player.id + 1 }}</p>
-              <v-text-field v-model="player.name" label="Nom du joueur" outlined class="input-field" />
-              <v-select v-model="player.alliance" :items="alliances" label="Alliance" outlined class="input-field" />
-              <v-select
-                v-model="player.army"
-                :items="armies"
-                item-title="armyName"
-                item-value="idArmyName"
-                label="Armée"
-                outlined
-                class="input-field"
-              />
-              <v-select
-                v-model="player.composition"
-                :items="armyCompositions"
-                item-title="armyCompositionName"
-                item-value="idArmyCompositiob"
-                label="Composition d'Armée"
-                outlined
-                class="input-field"
-              />
-              <v-text-field v-model="player.score" label="Score" type="number" outlined class="input-field" />
+      <v-row v-for="(pair, index) in playerPairs" :key="'pair-' + index" class="mb-6">
+        <v-col v-for="(player, playerIndex) in pair" :key="'player-' + player.id" cols="6">
+          <p class="text-h6">Joueur {{ player.id + 1 }}</p>
+          <v-text-field v-model="player.name" label="Nom du joueur" outlined class="input-field" />
+          <v-select
+            v-model="player.alliance"
+            :items="alliances"
+            item-title="allianceName"
+            item-value="idAlliance"
+            label="Alliance"
+            outlined
+            class="input-field"
+          />
+          <v-select
+            v-model="player.army"
+            :items="armiesName"
+            item-title="nameArmyName"
+            item-value="idArmyName"
+            label="Armée"
+            outlined
+            class="input-field"
+            @change="filterArmyCompositions(player)"
+          />
+          <v-select
+            v-model="player.armyComposition"
+            :items="getFilteredCompositions(player.army)"
+            item-title="nameArmyComposition"
+            item-value="idArmyComposition"
+            label="Composition d'Armée"
+            outlined
+            class="input-field"
+          />
+          <v-text-field v-model="player.score" label="Score" type="number" outlined class="input-field" />
 
-              <!-- Image dynamique pour Joueur 1 -->
-              <div
-                v-if="player.army"
-                class="battle-image"
-                :style="{ backgroundImage: 'url(/img/armees/tow-skaven.png)' }"
-              ></div>
-            </v-col>
-          </v-row>
+          <!-- Image dynamique pour Joueur 1 -->
+ <div
+  v-if="player.army"
+  class="battle-image"
+  :style="{ backgroundImage: `url(${getArmyImageUrl(player.army)})` }"
+/>
+
+        </v-col>
+      </v-row>
         </v-card-text>
       </v-card>
 
@@ -89,44 +106,66 @@
 
 <script setup>
 import { useArmyNameStore } from '@/stores/armyName';
-import { ref, onMounted, watch, computed } from 'vue';
-const armyNameStore = useArmyNameStore()
-armyNameStore.getArmyName()
+import { useArmyCompositionStore } from '@/stores/armyComposition';
+import { useScenarioStore } from '@/stores/scenario';
+import { useAllianceStore } from '@/stores/alliance';
+import { useArmyStore } from '@/stores/army';
+import { useArmyPhotoStore } from '@/stores/armyPhoto'
+import { usePlayerStore } from '@/stores/player';
+import { useBattleReportStore } from '@/stores/battleReport';
+import { ref, computed, onMounted, watch } from 'vue';
+
+const armyCompositionStore = useArmyCompositionStore();
+const armyNameStore = useArmyNameStore();
+const scenarioStore = useScenarioStore();
+const allianceStore = useAllianceStore();
+const armyStore = useArmyStore();
+const armyPhotoStore = useArmyPhotoStore()
+const playerStore = usePlayerStore()
+const battleReportStore = useBattleReportStore()
+
+armyNameStore.getArmyName();
+armyCompositionStore.getArmyComposition();
+scenarioStore.getScenario();
+allianceStore.getAlliance();
+armyStore.getArmy();
+armyPhotoStore.getArmyPhoto()
+
 const battleTitle = ref('');
 const description = ref('');
-const selectedScenario = ref('');
-const customScenario = ref('');
-const scenarios = ref(['Bataille Ouverte', 'Scénario Officiel', 'Autre']);
-const armiesName = computed(()=>{return armyNameStore.armyName});
-const armyCompositions = ref([]);
-const alliances = ['Ordre', 'Chaos', 'Destruction', 'Aucune'];
+const scenario = ref('');
+const scenarios = computed(() => scenarioStore.scenario || []);
+const armiesName = computed(() => armyNameStore.armyName || []);
+const armiesComposition = computed(() => armyCompositionStore.armyComposition || []);
+const alliances = computed(() => allianceStore.alliance || []);
+const armyPhotos = computed(() => armyPhotoStore.armyPhoto || [])
 
 const numberOfPlayers = ref(2);
 const playerOptions = Array.from({ length: 9 }, (_, i) => i + 2);
 
 const players = ref([
-  { id: 0, name: '', alliance: '', army: '', composition: '', score: 0 },
-  { id: 1, name: '', alliance: '', army: '', composition: '', score: 0 }
+  { id: 0, name: '', alliance: '', army: '', armyComposition: '', score: 0 },
+  { id: 1, name: '', alliance: '', army: '', armyComposition: '', score: 0 }
 ]);
 
-watch(numberOfPlayers, (newVal) => {
-  const parsed = parseInt(newVal);
-  if (parsed >= 2) {
-    while (players.value.length < parsed) {
+watch(numberOfPlayers, (newCount) => {
+  const currentLength = players.value.length
+  if (newCount > currentLength) {
+    for (let i = currentLength; i < newCount; i++) {
       players.value.push({
-        id: players.value.length,
+        id: i,
         name: '',
         alliance: '',
         army: '',
-        composition: '',
+        armyComposition: '',
         score: 0,
-      });
+      })
     }
-    while (players.value.length > parsed) {
-      players.value.pop();
-    }
+  } else if (newCount < currentLength) {
+    players.value.splice(newCount)
   }
-});
+})
+
 
 const playerPairs = computed(() => {
   const pairs = [];
@@ -136,29 +175,83 @@ const playerPairs = computed(() => {
   return pairs;
 });
 
+const getFilteredCompositions = (idArmyName) => {
+  if (!idArmyName || !armyStore.army || !armiesComposition.value) return [];
 
-function fetchArmyCompositions() {
-  fetch('http://localhost:8080/armycomposition')
-    .then(res => res.json())
-    .then(data => armyCompositions.value = data)
-    .catch(err => console.error("Erreur API : ", err));
-}
+  const uniqueCompositions = new Map();
 
-const saveBattleReport = () => {
-  const battleReport = {
-    title: battleTitle.value,
-    description: description.value,
-    players: players.value,
-    scenario: selectedScenario.value === 'Autre' ? customScenario.value : selectedScenario.value,
-  };
-  console.log("Rapport enregistré:", battleReport);
-  alert("Rapport enregistré avec succès !");
+  armyStore.army
+    .filter(army => army.armyName_idArmyName === idArmyName)
+    .forEach(army => {
+      const comp = armiesComposition.value.find(
+        comp => comp.idArmyComposition === army.armyComposition_idArmyComposition
+      );
+      if (comp && !uniqueCompositions.has(comp.idArmyComposition)) {
+        uniqueCompositions.set(comp.idArmyComposition, comp);
+      }
+    });
+
+  return Array.from(uniqueCompositions.values());
 };
 
-onMounted(() => {
-  fetchArmyCompositions();
-});
+const getArmyImageUrl = (armyId) => {
+  const photo = armyPhotos.value.find(p => p.armyName_idArmyName === armyId)
+  return photo ? `/img/armees/${photo.photoArmyName}` : '/img/armees/tow-battle.png'
+}
+
+const saveBattleReport = async () => {
+  try {
+    const createdPlayerIds = [];
+
+    console.log('Joueurs avant envoi :', players.value);
+
+    for (const p of players.value) {
+      const playerToSave = {
+        playerName: p.name,
+        playerScore: String(p.score),
+        alliance_idAlliance: typeof p.alliance === 'object' ? p.alliance.idAlliance : p.alliance,
+        armyName_idArmyName: typeof p.army === 'object' ? p.army.idArmyName : p.army,
+        armyComposition_idArmyComposition: typeof p.armyComposition === 'object' ? p.armyComposition.idArmyComposition : p.armyComposition,
+      };
+
+        const response = await playerStore.addPlayer(playerToSave);
+        const id = response.idPlayer;
+
+      createdPlayerIds.push({
+        idPlayer: id,
+        alliance: playerToSave.alliance_idAlliance,
+        army: playerToSave.armyName_idArmyName,
+        armyComposition: playerToSave.armyComposition_idArmyComposition
+      });
+    }
+
+    const firstPlayer = createdPlayerIds[0];
+
+    const reportToSend = {
+      nameBattleReport: battleTitle.value,
+      descriptionBattleReport: description.value,
+      player_idPlayer: firstPlayer.idPlayer,
+      player_alliance_idAlliance: firstPlayer.alliance,
+      player_armyName_idArmyName: firstPlayer.army,
+      player_armyComposition_idArmyComposition: firstPlayer.armyComposition,
+      scenario_idScenario: scenario.value,
+      battleReportPhoto_idBattleReportPhoto: 1
+    };
+
+    console.log('Rapport à envoyer :', reportToSend);
+
+    await battleReportStore.addBattleReport(reportToSend);
+
+    alert('Rapport enregistré avec succès !');
+  } catch (err) {
+    console.error('Erreur lors de la sauvegarde :', err);
+    alert('Une erreur est survenue. Vérifiez la console.');
+  }
+};
+
+
 </script>
+
 
 <style scoped>
 .background {
