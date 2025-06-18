@@ -92,12 +92,22 @@
       </v-row>
     </v-container>
   </div>
+
+      <v-snackbar v-model="snackbar" :timeout="5000" location="bottom right" color="success">
+      Le Rapport de Bataille a bien été enregistré
+      <template v-slot:actions>
+        <v-btn color="white" variant="text" @click="snackbar = false">
+          Fermer
+        </v-btn>
+      </template>
+    </v-snackbar>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 
 const reports = ref([]);
+const snackbar = ref(false);
 
 const factions = ref(['Empire', 'Bretonnie', 'Kislev', 'Orques']);
 const opponents = ref(['Elfes Noirs', 'Skavens', 'Vampires']);
@@ -205,6 +215,16 @@ function fetchReports() {
 }
 
 onMounted(fetchReports);
+
+onMounted(() => {
+  // Vérifiez le stockage local pour le message
+  const reportSuccess = localStorage.getItem('battleReportSuccess');
+  if (reportSuccess) {
+    snackbar.value = true;
+    // Supprimez le message du stockage local après l'avoir affiché
+    localStorage.removeItem('battleReportSuccess');
+  }
+});
 </script>
 
 

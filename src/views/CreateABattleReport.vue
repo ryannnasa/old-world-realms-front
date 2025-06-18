@@ -101,6 +101,7 @@
       <!-- Bouton de sauvegarde -->
       <v-btn class="save-button" @click="saveBattleReport">Enregistrer le rapport</v-btn>
     </v-container>
+
   </div>
 </template>
 
@@ -114,6 +115,9 @@ import { useArmyPhotoStore } from '@/stores/armyPhoto'
 import { usePlayerStore } from '@/stores/player';
 import { useBattleReportStore } from '@/stores/battleReport';
 import { ref, computed, onMounted, watch } from 'vue';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
 
 const armyCompositionStore = useArmyCompositionStore();
 const armyNameStore = useArmyNameStore();
@@ -214,8 +218,8 @@ const saveBattleReport = async () => {
         armyComposition_idArmyComposition: typeof p.armyComposition === 'object' ? p.armyComposition.idArmyComposition : p.armyComposition,
       };
 
-        const response = await playerStore.addPlayer(playerToSave);
-        const id = response.idPlayer;
+      const response = await playerStore.addPlayer(playerToSave);
+      const id = response.idPlayer;
 
       createdPlayerIds.push({
         idPlayer: id,
@@ -238,17 +242,18 @@ const saveBattleReport = async () => {
       battleReportPhoto_idBattleReportPhoto: 1
     };
 
-    console.log('Rapport à envoyer :', reportToSend);
-
     await battleReportStore.addBattleReport(reportToSend);
 
-    alert('Rapport enregistré avec succès !');
+    // Stockez un message dans le stockage local pour indiquer le succès
+    localStorage.setItem('battleReportSuccess', 'true');
+
+    // Redirigez vers AllBattleReports.vue
+    router.push('/AllBattleReports');
   } catch (err) {
     console.error('Erreur lors de la sauvegarde :', err);
     alert('Une erreur est survenue. Vérifiez la console.');
   }
 };
-
 
 </script>
 
