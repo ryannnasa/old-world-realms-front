@@ -26,7 +26,8 @@ function onSearch(searchQuery : string){
   background-repeat: no-repeat;
   background-attachment: fixed;
   min-height: 100vh;
-  padding: 0;
+  padding: 20px;
+
 }
 
 
