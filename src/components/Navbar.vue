@@ -1,6 +1,6 @@
 <template>
   <v-app-bar dark class="my-app-bar">
-    <div class="d-flex align-center justify-space-between w-100">
+    <div class="d-flex align-center justify-space-between w-90">
       <a href="/homepage" class="logo-link">
         <img src="/img/Logo Old World Realms.png" alt="Logo" class="logo">
       </a>
@@ -90,10 +90,9 @@ onUnmounted(() => {
   border-radius: 16px;
   height: 64px; /* Hauteur de la toolbar */
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  width: 90%;
-  padding-left: 16px;
-  padding-right: 16px;
-  
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  max-width: 95%;
   /* Changer la couleur de fond de la toolbar */
   background-color: #61503b !important; /* Exemple avec une couleur bleue foncée */
 
@@ -141,4 +140,5 @@ onUnmounted(() => {
   transform: scaleX(0);
   opacity: 0;
 }
+
 </style>
