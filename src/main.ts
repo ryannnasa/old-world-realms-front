@@ -20,6 +20,8 @@ const initOptions = {
 }
 
 keycloak.init(initOptions).then(authenticated => {
+  console.log("Keycloak", keycloak, authenticated)
+  keycloak.loadUserProfile().then(profile=>{console.log(profile)})
   if (!authenticated) {
     console.log("User is not authenticated. Redirecting to login page.")
     keycloak.login()

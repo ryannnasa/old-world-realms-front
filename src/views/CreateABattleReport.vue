@@ -1,19 +1,14 @@
 <template>
   <div class="background page-container">
     <v-container>
-      <v-row>
-        <!-- Titre -->
-        <v-col cols="12" md="6">
           <v-card class="mb-4 card-container">
             <v-card-title>Titre du Rapport</v-card-title>
             <v-card-text>
               <v-text-field v-model="battleTitle" label="Titre du rapport" outlined class="input-field" />
             </v-card-text>
           </v-card>
-        </v-col>
-
-        <!-- Scénario -->
-        <v-col cols="12" md="6">
+          <v-row>
+            <v-col cols="12" md="6">
           <v-card class="mb-4 card-container">
             <v-card-title>Scénario</v-card-title>
             <v-card-text>
@@ -27,9 +22,17 @@
                 class="input-field"
               />
             </v-card-text>
+            
           </v-card>
-        </v-col>
-      </v-row>
+          </v-col>
+          <v-col cols="12" md="6">
+          <v-card class="mb-4 card-container">
+                        <v-card-title>Points par armée</v-card-title> 
+              <v-text-field v-model="armyPoints" label="Score" type="number" outlined class="input-field" />
+              </v-card>
+              </v-col>
+              </v-row>
+
 
       <!-- Description -->
       <v-card class="mb-4 card-container">
@@ -111,10 +114,10 @@ import { useArmyCompositionStore } from '@/stores/armyComposition';
 import { useScenarioStore } from '@/stores/scenario';
 import { useAllianceStore } from '@/stores/alliance';
 import { useArmyStore } from '@/stores/army';
-import { useArmyPhotoStore } from '@/stores/armyPhoto'
+import { useArmyPhotoStore } from '@/stores/armyPhoto';
 import { usePlayerStore } from '@/stores/player';
 import { useBattleReportStore } from '@/stores/battleReport';
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
@@ -124,16 +127,16 @@ const armyNameStore = useArmyNameStore();
 const scenarioStore = useScenarioStore();
 const allianceStore = useAllianceStore();
 const armyStore = useArmyStore();
-const armyPhotoStore = useArmyPhotoStore()
-const playerStore = usePlayerStore()
-const battleReportStore = useBattleReportStore()
+const armyPhotoStore = useArmyPhotoStore();
+const playerStore = usePlayerStore();
+const battleReportStore = useBattleReportStore();
 
 armyNameStore.getArmyName();
 armyCompositionStore.getArmyComposition();
 scenarioStore.getScenario();
 allianceStore.getAlliance();
 armyStore.getArmy();
-armyPhotoStore.getArmyPhoto()
+armyPhotoStore.getArmyPhoto();
 
 const battleTitle = ref('');
 const description = ref('');
@@ -142,7 +145,8 @@ const scenarios = computed(() => scenarioStore.scenario || []);
 const armiesName = computed(() => armyNameStore.armyName || []);
 const armiesComposition = computed(() => armyCompositionStore.armyComposition || []);
 const alliances = computed(() => allianceStore.alliance || []);
-const armyPhotos = computed(() => armyPhotoStore.armyPhoto || [])
+const armyPhotos = computed(() => armyPhotoStore.armyPhoto || []);
+const armyPoints = ref(0);
 
 const numberOfPlayers = ref(2);
 const playerOptions = Array.from({ length: 9 }, (_, i) => i + 2);
@@ -153,7 +157,7 @@ const players = ref([
 ]);
 
 watch(numberOfPlayers, (newCount) => {
-  const currentLength = players.value.length
+  const currentLength = players.value.length;
   if (newCount > currentLength) {
     for (let i = currentLength; i < newCount; i++) {
       players.value.push({
@@ -163,13 +167,12 @@ watch(numberOfPlayers, (newCount) => {
         army: '',
         armyComposition: '',
         score: 0,
-      })
+      });
     }
   } else if (newCount < currentLength) {
-    players.value.splice(newCount)
+    players.value.splice(newCount);
   }
-})
-
+});
 
 const playerPairs = computed(() => {
   const pairs = [];
@@ -199,64 +202,37 @@ const getFilteredCompositions = (idArmyName) => {
 };
 
 const getArmyImageUrl = (armyId) => {
-  const photo = armyPhotos.value.find(p => p.armyName_idArmyName === armyId)
-  return photo ? `/img/armees/${photo.photoArmyName}` : '/img/armees/tow-battle.png'
-}
-
-const saveBattleReport = async () => {
-  try {
-    const createdPlayerIds = [];
-
-    console.log('Joueurs avant envoi :', players.value);
-
-    for (const p of players.value) {
-      const playerToSave = {
-        playerName: p.name,
-        playerScore: String(p.score),
-        alliance_idAlliance: typeof p.alliance === 'object' ? p.alliance.idAlliance : p.alliance,
-        armyName_idArmyName: typeof p.army === 'object' ? p.army.idArmyName : p.army,
-        armyComposition_idArmyComposition: typeof p.armyComposition === 'object' ? p.armyComposition.idArmyComposition : p.armyComposition,
-      };
-
-      const response = await playerStore.addPlayer(playerToSave);
-      const id = response.idPlayer;
-
-      createdPlayerIds.push({
-        idPlayer: id,
-        alliance: playerToSave.alliance_idAlliance,
-        army: playerToSave.armyName_idArmyName,
-        armyComposition: playerToSave.armyComposition_idArmyComposition
-      });
-    }
-
-    const firstPlayer = createdPlayerIds[0];
-
-    const reportToSend = {
-      nameBattleReport: battleTitle.value,
-      descriptionBattleReport: description.value,
-      player_idPlayer: firstPlayer.idPlayer,
-      player_alliance_idAlliance: firstPlayer.alliance,
-      player_armyName_idArmyName: firstPlayer.army,
-      player_armyComposition_idArmyComposition: firstPlayer.armyComposition,
-      scenario_idScenario: scenario.value,
-      battleReportPhoto_idBattleReportPhoto: 1
-    };
-
-    await battleReportStore.addBattleReport(reportToSend);
-
-    // Stockez un message dans le stockage local pour indiquer le succès
-    localStorage.setItem('battleReportSuccess', 'true');
-
-    // Redirigez vers AllBattleReports.vue
-    router.push('/AllBattleReports');
-  } catch (err) {
-    console.error('Erreur lors de la sauvegarde :', err);
-    alert('Une erreur est survenue. Vérifiez la console.');
-  }
+  const photo = armyPhotos.value.find(p => p.armyName_idArmyName === armyId);
+  return photo ? `/img/armees/${photo.photoArmyName}` : '/img/armees/tow-battle.png';
 };
 
-</script>
+const saveBattleReport = () => {
+  const reportToSend = {
+    nameBattleReport: battleTitle.value,
+    descriptionBattleReport: description.value,
+    scenario_idScenario: scenario.value,
+    battleReportPhoto_idBattleReportPhoto: 1,
+    armyPoints : armyPoints.value,
+    players: players.value.map(p => ({
+      playerName: p.name || null,
+      playerScore: p.score != null ? String(p.score) : null,
+      alliance_idAlliance: p.alliance ?? null,
+      armyName_idArmyName: p.army ?? null,
+      armyComposition_idArmyComposition: p.armyComposition ?? null,
+    }))
+  };
 
+  battleReportStore.addBattleReport(reportToSend)
+    .then(() => {
+      // Tu peux mettre un message dans le store ou autre, ici pas besoin de localStorage
+      router.push('/AllBattleReports');
+    })
+    .catch(err => {
+      console.error('Erreur lors de la sauvegarde :', err);
+      alert('Une erreur est survenue. Vérifiez la console.');
+    });
+};
+</script>
 
 <style scoped>
 .background {
