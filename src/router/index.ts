@@ -22,13 +22,19 @@ const routes = [
     component : AllBattleReports
   },
 
-  {
+    {
     path: '/createabattlereport',
     name: 'Create A New Battle Report',
     component : CreateABattleReport
   },
   {
-    path: '/battlereportview',
+    path: '/createabattlereport/:id',
+    name: 'Modify A New Battle Report',
+    component : CreateABattleReport
+  },
+
+   {
+    path: '/battlereportview/:id',
     name: 'Battle Report View',
     component : BattleReportView
   },
@@ -38,6 +44,7 @@ const routes = [
     name: 'All Units',
     component : AllUnits
   }
+
   // Commenter ou supprimer cette section si vous n'avez pas le fichier AboutView.vue
   // {
   //   path: '/about',

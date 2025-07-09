@@ -25,6 +25,13 @@
             </v-col>
             <v-col cols="12" md="3">
               <v-text-field v-model.number="selectedPoints" label="Points" type="number" outlined clearable></v-text-field>
+              <div class="chip-container">
+                <v-chip @click="selectedPoints=500">500</v-chip>
+                <v-chip @click="selectedPoints=1000">1000</v-chip>
+                <v-chip @click="selectedPoints=1500">1500</v-chip>
+                <v-chip @click="selectedPoints=2000">2000</v-chip>
+                <v-chip @click="selectedPoints=3000">3000</v-chip>
+              </div>
             </v-col>
           </v-row>
 
@@ -50,48 +57,44 @@
                   <div class="battle-image full" :style="{ backgroundImage: 'url(/img/armees/tow-battle.png)' }"></div>
                 </template>
                 <template v-else>
-  <div
-  v-for="(alliance, index) in groupedByAlliance(report.players)"
-  :key="index"
-  class="battle-image alliance-group"
-  :class="{ 'single-army': alliance.singleArmy }"
-  :style="{ width: 100 / groupedByAlliance(report.players).length + '%' }"
->
-  <div
-  v-for="player in alliance"
-  :key="player.name"
-  class="player-image"
-  :title="player.army"
-  :style="{
-    backgroundImage: player.armyImage ? `url('${player.armyImage}')` : 'url(/path/to/default/image.png)'
-  }"
->
-</div>
-
-</div>
-
-
-</template>
-
+                  <div
+                    v-for="(alliance, index) in groupedByAlliance(report.players)"
+                    :key="index"
+                    class="battle-image alliance-group"
+                    :class="{ 'single-army': alliance.singleArmy }"
+                    :style="{ width: 100 / groupedByAlliance(report.players).length + '%' }"
+                  >
+                    <div
+                      v-for="player in alliance"
+                      :key="player.name"
+                      class="player-image"
+                      :title="player.army"
+                      :style="{
+                        backgroundImage: player.armyImage ? `url('${player.armyImage}')` : 'url(/path/to/default/image.png)'
+                      }"
+                    ></div>
+                  </div>
+                </template>
               </div>
 
               <v-card-title class="mt-2">{{ report.title }}</v-card-title>
 
-              <v-card-subtitle class="d-flex align-center justify-center">
-                <template v-for="(alliance, index) in groupedByAlliance(report.players)" :key="index">
-  <span>
-    {{ alliance.map(player => player.name).join(' / ') }}
-  </span>
-  <v-icon
-    v-if="index < groupedByAlliance(report.players).length - 1"
-    class="mx-2"
-    color="grey lighten-2"
-  >
-    mdi-sword-cross
-  </v-icon>
-</template>
+              <v-card-subtitle class="d-flex align-center justify-center flex-wrap text-center">
+  <template v-for="(alliance, index) in groupedByAlliance(report.players)" :key="index">
+    <span class="mx-1 font-weight-medium">
+      {{ alliance.map(player => player.name).join(' / ') }}
+    </span>
+    <v-icon
+      v-if="index < groupedByAlliance(report.players).length - 1"
+      class="mx-2"
+      color="grey"
+    >
+      mdi-sword-cross
+    </v-icon>
+  </template>
+</v-card-subtitle>
 
-              </v-card-subtitle>
+
 
               <v-card-text>{{ report.points }} points</v-card-text>
             </v-card>
@@ -102,11 +105,11 @@
   </div>
 
   <v-snackbar v-model="snackbar" :timeout="5000" location="bottom right" color="success">
-  Le Rapport de Bataille a bien été enregistré
-  <template v-slot:actions>
-    <v-btn color="white" variant="text" @click="closeSnackbar">Fermer</v-btn>
-  </template>
-</v-snackbar>
+    Le Rapport de Bataille a bien été enregistré
+    <template v-slot:actions>
+      <v-btn color="white" variant="text" @click="closeSnackbar">Fermer</v-btn>
+    </template>
+  </v-snackbar>
 </template>
 
 <script setup>
@@ -116,6 +119,7 @@ import { useArmyPhotoStore } from '@/stores/armyPhoto';
 import { useArmyNameStore } from '@/stores/armyName';
 import { useAllianceStore } from '@/stores/alliance';
 import { useScenarioStore } from '@/stores/scenario';
+import _ from 'lodash';
 
 const battleReportStore = useBattleReportStore();
 const armyPhotoStore = useArmyPhotoStore();
@@ -126,29 +130,15 @@ const scenarioStore = useScenarioStore();
 const reports = ref([]);
 const snackbar = ref(false);
 
-const factions = computed(() => {
-  return armyNameStore.armyName.map(a => a.nameArmyName);
-});
-const opponents = computed(() => {
-  return armyNameStore.armyName.map(a => a.nameArmyName);
-});
-const scenarios = computed(() => {
-  return scenarioStore.scenario.map(s => s.scenarioName);
-});
-
-// POINTS OPTIONS FIXES (500 à 3000)
-const pointsOptions = computed(() => {
-  const options = [];
-  for (let p = 500; p <= 3000; p += 250) {
-    options.push(p);
-  }
-  return options;
-});
+const factions = computed(() => armyNameStore.armyName.map(a => a.nameArmyName));
+const opponents = factions; // même liste que factions
+const scenarios = computed(() => scenarioStore.scenario.map(s => s.scenarioName));
 
 const selectedFaction = ref('');
 const selectedOpponent = ref('');
 const selectedScenario = ref('');
 const selectedPoints = ref(null);
+const NoAlliance = 4;
 
 function resetFilters() {
   selectedFaction.value = '';
@@ -163,12 +153,12 @@ const filteredReports = computed(() => {
     if (!firstPlayer) return false;
 
     const firstAllianceId = firstPlayer.allianceId;
-    const isFirstPlayerAlone = !firstAllianceId || firstAllianceId === 3;
+    const isFirstPlayerAlone = !firstAllianceId || firstAllianceId === NoAlliance;
 
     const enemyPlayers = report.players.filter(p => {
       if (p.name === firstPlayer.name) return false;
       if (isFirstPlayerAlone) {
-        return p.allianceId !== 3 && p.allianceId !== undefined;
+        return p.allianceId === NoAlliance && p.allianceId !== undefined;
       }
       return p.allianceId !== firstAllianceId;
     });
@@ -192,17 +182,35 @@ function getScenarioName(scenarioId) {
 function groupedByAlliance(players) {
   if (!Array.isArray(players)) return [];
 
-  const alliances = {};
-  for (const player of players) {
-    const key = player.alliance && player.alliance !== 'Aucune' ? player.alliance : player.name;
-    if (!alliances[key]) alliances[key] = [];
-    alliances[key].push(player);
+  const groupedObj = _.groupBy(players, player => {
+    // Si le joueur n'a pas d'alliance ou s'il est marqué comme "sans alliance"
+    if (!player.allianceId || player.allianceId === NoAlliance) {
+      return `no-alliance-${player.name}`;
+    }
+    return player.allianceId;
+  });
+
+  const groups = Object.values(groupedObj);
+
+  // Identifier le groupe du premier joueur pour le mettre en premier
+  const firstPlayer = players[0];
+  const firstGroupKey = (!firstPlayer.allianceId || firstPlayer.allianceId === NoAlliance)
+    ? `no-alliance-${firstPlayer.name}`
+    : firstPlayer.allianceId;
+
+  const sortedGroups = [];
+
+  if (groupedObj[firstGroupKey]) {
+    sortedGroups.push(groupedObj[firstGroupKey]);
+    delete groupedObj[firstGroupKey];
   }
 
-  const grouped = Object.values(alliances);
-  if (grouped.length === 1) grouped[0].singleArmy = true;
+  // Ajouter les autres groupes ensuite
+  for (const group of Object.values(groupedObj)) {
+    sortedGroups.push(group);
+  }
 
-  return grouped;
+  return sortedGroups;
 }
 
 function getArmyImageUrl(armyId) {
@@ -220,24 +228,12 @@ function getAllianceName(allianceId) {
   return alliance ? alliance.nameAlliance : 'Aucune';
 }
 
-function getArmyNameFromImage(imageUrl) {
-  const photo = armyPhotoStore.armyPhoto.find(p => `/img/armees/${p.image_ArmyPhoto}` === imageUrl);
-  if (photo) {
-    const army = armyNameStore.armyName.find(a => a.idArmyName === photo.armyName_idArmyName);
-    return army ? army.nameArmyName : 'Inconnu';
-  }
-  return 'Inconnu';
-}
-
 function fetchReports() {
-  console.log('Début récupération des données...');
   return armyPhotoStore.getArmyPhoto()
     .then(() => armyNameStore.getArmyName())
     .then(() => allianceStore.getAlliance())
     .then(() => battleReportStore.getBattleReport())
     .then(() => {
-      console.log('BattleReports bruts :', battleReportStore.battleReports);
-
       reports.value = battleReportStore.battleReports.map(report => {
         const players = report.players?.map(p => ({
           name: p.playerName,
@@ -253,14 +249,12 @@ function fetchReports() {
           title: report.nameBattleReport,
           description: report.descriptionBattleReport,
           scenario: getScenarioName(report.scenario_idScenario),
-          points: Number(report.armyPoints), // Bien en Number
+          points: Number(report.armyPoints),
           faction: players[0]?.army || '',
           opponent: players[1]?.army || '',
           players
         };
       });
-
-      console.log('Reports transformés :', reports.value);
     })
     .catch(err => {
       console.error('Erreur lors de la récupération des rapports de bataille :', err);
@@ -289,6 +283,7 @@ function closeSnackbar() {
   battleReportStore.clearBattleReportSuccess();
 }
 </script>
+
 
 <style scoped>
 .background {
@@ -427,5 +422,11 @@ function closeSnackbar() {
 .reset-button:hover {
   background-color: #EBDEC2;
   color: #332018;
+}
+
+.chip-container {
+  display: flex;
+  justify-content: space-evenly;
+
 }
 </style>
