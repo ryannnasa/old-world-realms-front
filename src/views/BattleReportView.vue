@@ -1,184 +1,234 @@
 <template>
-    <div class="background page-container">
-      <v-container>
-        <div class="title-wrapper">
-          <v-card class="mb-4 title-container">
-            <v-card-title class="text-center">{{ battleReport.title }}</v-card-title>
+  <div class="background page-container">
+    <v-container>
+      <div class="title-wrapper">
+        <v-card class="mb-4 title-container">
+          <v-card-title class="text-center">{{ battleReport?.nameBattleReport }}</v-card-title>
+        </v-card>
+      </div>
+
+      <v-row class="battle-overview" v-if="players.length >= 2" justify="center" align="center" dense>
+        <v-col
+          v-for="(player, index) in players"
+          :key="player.idPlayer"
+          cols="12" sm="6" md="4" lg="3"
+        >
+          <v-card
+            class="army-card"
+            :class="player.isWinner ? 'winner' : 'loser'"
+          >
+            <div
+              class="battle-image"
+              :style="{ backgroundImage: `url(${getArmyImageUrl(player.armyName_idArmyName)})` }"
+            />
+            <v-card-text>
+              <p class="army-name">{{ player.playerName }}</p>
+              <p class="army-composition">{{ getArmyName(player.armyName_idArmyName) }}</p>
+              <p class="alliance-name" v-if="player.alliance_idAlliance">
+                Alliance : {{ getAllianceName(player.alliance_idAlliance) }}
+              </p>
+              <div class="score">
+                <p>{{ Number(player.playerScore) ?? 0 }}</p>
+              </div>
+            </v-card-text>
           </v-card>
-        </div>
-  
-        <v-row class="battle-overview">
-          <v-col cols="5">
-            <v-card class="army-card">
-              <div class="battle-image" :style="{ backgroundImage: `url(${battleReport.attacker.image})` }"></div>
-              <v-card-text>
-                <p class="army-name">{{ battleReport.attacker.army }}</p>
-                <p class="army-composition">{{ battleReport.attacker.composition }}</p>
-                <div class="score" :class="battleReport.attacker.score > battleReport.defender.score ? 'victory' : 'defeat'">
-                  <p>{{ battleReport.attacker.score }}</p>
-                  <span v-if="battleReport.attacker.score > battleReport.defender.score">Victoire</span>
-                  <span v-if="battleReport.attacker.score < battleReport.defender.score">Défaite</span>
-                </div>
-              </v-card-text>
-            </v-card>
-          </v-col>
-  
-          <v-col cols="2" class="vs-container">
-            <p class="vs-text">VS</p>
-          </v-col>
-  
-          <v-col cols="5">
-            <v-card class="army-card">
-              <div class="battle-image" :style="{ backgroundImage: `url(${battleReport.defender.image})` }"></div>
-              <v-card-text>
-                <p class="army-name">{{ battleReport.defender.army }}</p>
-                <p class="army-composition">{{ battleReport.defender.composition }}</p>
-                <div class="score" :class="battleReport.defender.score > battleReport.attacker.score ? 'victory' : 'defeat'">
-                  <p>{{ battleReport.defender.score }}</p>
-                  <span v-if="battleReport.defender.score > battleReport.attacker.score">Victoire</span>
-                  <span v-if="battleReport.defender.score < battleReport.attacker.score">Défaite</span>                  
-                </div>
-              </v-card-text>
-            </v-card>
-          </v-col>
-        </v-row>
-  
-        <v-card class="mb-4 card-container description-card">
-          <v-card-title>Description de la bataille</v-card-title>
-          <v-card-text>
-            <p>{{ battleReport.description }}</p>
-          </v-card-text>
-        </v-card>
-  
-        <v-card class="mb-4 card-container photos-card">
-          <v-card-title>Photos</v-card-title>
-          <v-card-text>
-            <v-carousel>
-              <v-carousel-item v-for="(photo, index) in battleReport.photos" :key="index" :src="photo"></v-carousel-item>
-            </v-carousel>
-          </v-card-text>
-        </v-card>
-      </v-container>
-    </div>
-  </template>
-  
-  <script setup>
-  import { ref } from 'vue';
-  
-  const battleReport = ref({
-    title: "Bataille épique à Middenheim",
-    description: "Une grande bataille s'est déroulée entre les forces de Bretonnie et les Hommes-Bêtes dans les terres sauvages autour de Middenheim.",
-    photos: ["/img/Bretonniens/BREChevaliersDuGraal01.jpg", "/img/Bretonniens/BREChevaliersDuGraal02.jpg"],
-    attacker: {
-      name: "Chevalier Roland",
-      army: "Kingdom of Bretonnia",
-      composition: "Cavalerie lourde",
-      score: 35,
-      image: "/img/armees/kingdom-of-bretonnia.png"
-    },
-    defender: {
-      name: "Chaman Gorthar",
-      army: "Beastmen",
-      composition: "Harde sauvage",
-      score: 28,
-      image: "/img/armees/tow-beastmen.png"
+        </v-col>
+      </v-row>
+
+      <v-card class="mb-4 card-container description-card">
+        <v-card-title>Description de la bataille</v-card-title>
+        <v-card-text>
+          <p>{{ battleReport?.descriptionBattleReport }}</p>
+        </v-card-text>
+      </v-card>
+
+      <v-card class="mb-4 card-container photos-card">
+        <v-card-title>Photos</v-card-title>
+        <v-card-text>
+          <v-carousel>
+            <v-carousel-item
+              v-for="(photo, index) in battlePhotos"
+              :key="index"
+              :src="photo"
+            />
+          </v-carousel>
+        </v-card-text>
+      </v-card>
+    </v-container>
+  </div>
+</template>
+
+<script setup>
+import { ref, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
+import { useBattleReportStore } from '@/stores/battleReport';
+import { useArmyPhotoStore } from '@/stores/armyPhoto';
+import { useArmyNameStore } from '@/stores/armyName';
+import { useAllianceStore } from '@/stores/alliance';
+
+const route = useRoute();
+const battleReportStore = useBattleReportStore();
+const armyPhotoStore = useArmyPhotoStore();
+const armyNameStore = useArmyNameStore();
+const allianceStore = useAllianceStore();
+
+const battleReport = ref(null);
+const players = ref([]);
+const battlePhotos = ref([]);
+
+// Nom lisible de l'armée depuis l'id
+function getArmyName(armyId) {
+  const army = armyNameStore.armyName.find(a => a.idArmyName === armyId);
+  return army ? army.nameArmyName : 'Inconnu';
+}
+
+// Image d'armée depuis l'id
+function getArmyImageUrl(armyId) {
+  const photo = armyPhotoStore.armyPhoto.find(p => p.armyName_idArmyName === armyId);
+  return photo ? `/img/armees/${photo.photoArmyName}` : '/img/armees/default.jpg';
+}
+
+// Nom de l'alliance depuis l'id
+function getAllianceName(allianceId) {
+  const alliance = allianceStore.alliance.find(a => a.idAlliance === allianceId);
+  return alliance ? alliance.allianceName : 'Inconnue';
+}
+
+onMounted(async () => {
+  await Promise.all([
+    armyPhotoStore.getArmyPhoto(),
+    armyNameStore.getArmyName(),
+    allianceStore.getAlliance(),
+    battleReportStore.getBattleReport()
+  ]);
+
+  const id = parseInt(route.params.id);
+  battleReport.value = battleReportStore.battleReports.find(b => b.idBattleReport === id);
+
+  if (battleReport.value) {
+    players.value = battleReport.value.players ?? [];
+    const allianceScores = {};
+    for (const player of players.value) {
+      const allianceId = player.alliance_idAlliance;
+      if (allianceId !== 4) {
+        allianceScores[allianceId] = (allianceScores[allianceId] || 0) + (Number(player.playerScore) || 0);
+      }
     }
-  });
-  </script>
-  
-  <style scoped>
-  .background {
-    background: url('/img/background3.webp');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
-    min-height: 100vh;
-    padding: 20px;
+
+    let maxAllianceScore = 0;
+    let winningAllianceIds = [];
+    for (const [allianceId, totalScore] of Object.entries(allianceScores)) {
+      if (totalScore > maxAllianceScore) {
+        maxAllianceScore = totalScore;
+        winningAllianceIds = [Number(allianceId)];
+      } else if (totalScore === maxAllianceScore) {
+        winningAllianceIds.push(Number(allianceId));
+      }
+    }
+    players.value = players.value.map(p => ({
+      ...p,
+      isWinner: winningAllianceIds.includes(p.alliance_idAlliance) && p.alliance_idAlliance !== 4
+    }));
+
+    // Photos statiques exemples
+    battlePhotos.value = [
+      '/img/Bretonniens/BREChevaliersDuGraal01.jpg',
+      '/img/Bretonniens/BREChevaliersDuGraal02.jpg',
+    ];
   }
-  
-  .page-container {
-    margin-top: 80px;
-    background-color: #211510;
-    min-height: 100vh;
-  }
-  
-  .title-wrapper {
-    text-align: center;
-    display: flex;
-    justify-content: center;
-  }
-  
-  .title-container, .card-container, .description-card, .photos-card {
-    text-align: center;
-    background-color: #332018;
-    color: #EBDEC2;
-    padding: 10px;
-    border-radius: 10px;
-    min-width: 200px; /* Optional, guarantees a minimum width */
-  }
-  
-  .battle-overview {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 20px;
-  }
-  
-  .army-card {
-    background-color: #332018;
-    color: #EBDEC2;
-    padding: 10px;
-    border-radius: 10px;
-    text-align: center;
-  }
-  
-  .battle-image {
-    width: 100%;
-    max-width: 400px;
-    height: 300px;
-    background-size: cover;
-    background-position: center;
-    border-radius: 10px;
-  }
-  
-  .army-name {
-    font-size: 18px;
-    font-weight: bold;
-  }
-  
-  .army-composition {
-    font-size: 14px;
-  }
-  
-  .score {
-    font-size: 20px;
-    font-weight: bold;
-    padding: 10px;
-    border-radius: 10px;
-    margin-top: 10px;
-  }
-  
-  .victory {
-    background-color: green;
-    color: white;
-  }
-  
-  .defeat {
-    background-color: red;
-    color: white;
-  }
-  
-  .vs-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .vs-text {
-    font-size: 30px;
-    font-weight: bold;
-    color: #211510; /* Marron foncé */
-  }
-  </style>
-  
+});
+</script>
+
+<style scoped>
+.background {
+  background: url('/img/background3.webp');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.page-container {
+  margin-top: 80px;
+  background-color: #211510;
+  min-height: 100vh;
+}
+
+.title-wrapper {
+  text-align: center;
+  display: flex;
+  justify-content: center;
+}
+
+.title-container,
+.card-container,
+.description-card,
+.photos-card {
+  text-align: center;
+  background-color: #332018;
+  color: #EBDEC2;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.battle-overview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  gap: 20px;
+}
+
+.alliance-name {
+  font-weight: bold;
+  margin-top: 0.5em;
+  color: #EBDEC2; /* couleur pour bien distinguer l'alliance */
+}
+
+.army-card {
+  background-color: #332018;
+  color: #EBDEC2;
+  padding: 10px;
+  border-radius: 10px;
+  text-align: center;
+  transition: background-color 0.3s ease;
+}
+
+.army-card.winner {
+  background-color: #3a5a2a; /* Vert clair */
+}
+
+.army-card.loser {
+  background-color: #5a2a2a; /* Rouge clair */
+}
+
+.battle-image {
+  width: 100%;
+  max-width: 400px;
+  height: 300px;
+  background-size: cover;
+  background-position: center;
+  border-radius: 10px;
+  margin: 0 auto 10px;
+}
+
+.army-name {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.army-composition {
+  font-size: 14px;
+}
+
+.score {
+  font-size: 20px;
+  font-weight: bold;
+  padding: 10px;
+  border-radius: 10px;
+  margin-top: 10px;
+  background-color: #5e493e;
+}
+</style>

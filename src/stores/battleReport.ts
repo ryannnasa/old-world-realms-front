@@ -20,14 +20,34 @@ type BattleReport = {
 export const useBattleReportStore = defineStore('battleReport', {
   state: () => ({
     battleReports: [] as BattleReport[],
-    battleReportSuccess: false,  // <- nouveau flag
+    battleReport: null as BattleReport | null, // 👈 pour un rapport individuel
+    battleReportSuccess: false,
   }),
+
   actions: {
     getBattleReport() {
       return fetch('http://localhost:8080/battlereport')
         .then(res => res.json())
         .then(data => this.battleReports = data)
         .catch(err => console.error('Erreur API: ', err));
+    },
+
+    fetchBattleReportById(id: number) {
+      return fetch(`http://localhost:8080/battlereport/${id}`)
+        .then(res => {
+          if (!res.ok) {
+            throw new Error('Battle report introuvable');
+          }
+          return res.json();
+        })
+        .then(data => {
+          this.battleReport = data;
+          return data;
+        })
+        .catch(err => {
+          console.error('Erreur API (fetchBattleReportById):', err);
+          throw err;
+        });
     },
 
     addBattleReport(battleReport: BattleReport) {
@@ -46,7 +66,6 @@ export const useBattleReportStore = defineStore('battleReport', {
         })
         .then((data: BattleReport) => {
           this.battleReports.push(data);
-          // Dès que la création réussit, on sauvegarde le flag dans localStorage
           localStorage.setItem('battleReportSuccess', 'true');
           this.battleReportSuccess = true;
           return data;
@@ -58,7 +77,6 @@ export const useBattleReportStore = defineStore('battleReport', {
     },
 
     checkBattleReportSuccess() {
-      // Vérifie localStorage et met à jour l'état, puis efface la clé
       const success = localStorage.getItem('battleReportSuccess');
       if (success) {
         this.battleReportSuccess = true;

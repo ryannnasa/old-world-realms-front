@@ -50,7 +50,7 @@
           md="6"
           lg="4"
         >
-          <router-link :to="`/battlereportview`" style="text-decoration: none;">
+          <router-link :to="`/battlereportview/${report.id}`" style="text-decoration: none;">
             <v-card class="card-container battle-card" hover>
               <div class="battle-images-container">
                 <template v-if="report.players.length > 4">
