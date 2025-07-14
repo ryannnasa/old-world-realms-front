@@ -20,8 +20,9 @@ type BattleReport = {
 export const useBattleReportStore = defineStore('battleReport', {
   state: () => ({
     battleReports: [] as BattleReport[],
-    battleReport: null as BattleReport | null, // 👈 pour un rapport individuel
+    battleReport: null as BattleReport | null, // pour un rapport individuel
     battleReportSuccess: false,
+    battleReportAction: null as string | null,
   }),
 
   actions: {
@@ -50,42 +51,92 @@ export const useBattleReportStore = defineStore('battleReport', {
         });
     },
 
-    addBattleReport(battleReport: BattleReport) {
-      return fetch('http://localhost:8080/battlereport', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(battleReport),
+    deleteBattleReport(id: number) {
+      return fetch(`http://localhost:8080/battlereport/${id}`, {
+        method: 'DELETE',
       })
         .then(response => {
           if (!response.ok) {
-            throw new Error('Erreur lors de la création du rapport');
+            throw new Error('Erreur lors de la suppression du rapport');
           }
-          return response.json();
-        })
-        .then((data: BattleReport) => {
-          this.battleReports.push(data);
-          localStorage.setItem('battleReportSuccess', 'true');
+          // Mise à jour locale de la liste
+          this.battleReports = this.battleReports.filter(report => report.idBattleReport !== id);
+
+          // Stocker l'action dans localStorage pour la snackbar
+          localStorage.setItem('battleReportSuccess', 'deleted');
           this.battleReportSuccess = true;
-          return data;
         })
-        .catch(error => {
-          console.error('Erreur API lors de la création du BattleReport :', error);
-          throw error;
+        .catch(err => {
+          console.error('Erreur API (deleteBattleReport):', err);
+          throw err;
         });
     },
 
-    checkBattleReportSuccess() {
-      const success = localStorage.getItem('battleReportSuccess');
-      if (success) {
-        this.battleReportSuccess = true;
-        localStorage.removeItem('battleReportSuccess');
-      }
+    postBattleReport(battleReport: BattleReport) {
+      return fetch('http://localhost:8080/battlereport', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(battleReport),
+      })
+        .then(res => {
+          if (!res.ok) {
+            throw new Error("Erreur lors de l'ajout du rapport");
+          }
+          return res.json();
+        })
+        .then(data => {
+          this.battleReports.push(data);
+          localStorage.setItem('battleReportSuccess', 'created');
+          this.battleReportSuccess = true;
+        })
+        .catch(err => {
+          console.error('Erreur API (postBattleReport):', err);
+          throw err;
+        });
     },
 
-    clearBattleReportSuccess() {
-      this.battleReportSuccess = false;
-    }
+    updateBattleReport(battleReport: BattleReport) {
+      return fetch(`http://localhost:8080/battlereport/${battleReport.idBattleReport}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(battleReport),
+      })
+        .then(res => {
+          if (!res.ok) {
+            throw new Error("Erreur lors de la mise à jour du rapport");
+          }
+          return res.json();
+        })
+        .then(data => {
+          // Mettre à jour le rapport dans la liste locale
+          const index = this.battleReports.findIndex(r => r.idBattleReport === data.idBattleReport);
+          if (index !== -1) {
+            this.battleReports[index] = data;
+          }
+
+          localStorage.setItem('battleReportSuccess', 'updated');
+          this.battleReportSuccess = true;
+        })
+        .catch(err => {
+          console.error('Erreur API (updateBattleReport):', err);
+          throw err;
+        });
+    },
+    checkBattleReportSuccess() {
+  const action = localStorage.getItem('battleReportSuccess');
+  if (action) {
+    this.battleReportAction = action;
+    this.battleReportSuccess = true;
+  } else {
+    this.battleReportSuccess = false;
+    this.battleReportAction = null;
+  }
+},
+
+clearBattleReportSuccess() {
+  localStorage.removeItem('battleReportSuccess');
+  this.battleReportSuccess = false;
+  this.battleReportAction = null;
+},
   },
 });

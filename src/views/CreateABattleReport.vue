@@ -109,6 +109,9 @@
 </template>
 
 <script setup>
+import { ref, computed, watch, onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+
 import { useArmyNameStore } from '@/stores/armyName';
 import { useArmyCompositionStore } from '@/stores/armyComposition';
 import { useScenarioStore } from '@/stores/scenario';
@@ -117,10 +120,11 @@ import { useArmyStore } from '@/stores/army';
 import { useArmyPhotoStore } from '@/stores/armyPhoto';
 import { usePlayerStore } from '@/stores/player';
 import { useBattleReportStore } from '@/stores/battleReport';
-import { ref, computed, watch } from 'vue';
-import { useRouter } from 'vue-router';
 
+// Stores
+const route = useRoute();
 const router = useRouter();
+const reportId = route.params.id || null;
 
 const armyCompositionStore = useArmyCompositionStore();
 const armyNameStore = useArmyNameStore();
@@ -131,22 +135,17 @@ const armyPhotoStore = useArmyPhotoStore();
 const playerStore = usePlayerStore();
 const battleReportStore = useBattleReportStore();
 
-armyNameStore.getArmyName();
-armyCompositionStore.getArmyComposition();
-scenarioStore.getScenario();
-allianceStore.getAlliance();
-armyStore.getArmy();
-armyPhotoStore.getArmyPhoto();
-
+// Données
 const battleTitle = ref('');
 const description = ref('');
 const scenario = ref('');
+const armyPoints = ref(0);
+
 const scenarios = computed(() => scenarioStore.scenario || []);
 const armiesName = computed(() => armyNameStore.armyName || []);
 const armiesComposition = computed(() => armyCompositionStore.armyComposition || []);
 const alliances = computed(() => allianceStore.alliance || []);
 const armyPhotos = computed(() => armyPhotoStore.armyPhoto || []);
-const armyPoints = ref(0);
 
 const numberOfPlayers = ref(2);
 const playerOptions = Array.from({ length: 9 }, (_, i) => i + 2);
@@ -156,6 +155,15 @@ const players = ref([
   { id: 1, name: '', alliance: '', army: '', armyComposition: '', score: 0 }
 ]);
 
+// Initialisation des données des stores
+armyNameStore.getArmyName();
+armyCompositionStore.getArmyComposition();
+scenarioStore.getScenario();
+allianceStore.getAlliance();
+armyStore.getArmy();
+armyPhotoStore.getArmyPhoto();
+
+// Watch pour adapter le nombre de joueurs
 watch(numberOfPlayers, (newCount) => {
   const currentLength = players.value.length;
   if (newCount > currentLength) {
@@ -174,6 +182,7 @@ watch(numberOfPlayers, (newCount) => {
   }
 });
 
+// Joueurs par paire
 const playerPairs = computed(() => {
   const pairs = [];
   for (let i = 0; i < players.value.length; i += 2) {
@@ -182,6 +191,7 @@ const playerPairs = computed(() => {
   return pairs;
 });
 
+// Composition filtrée selon l’armée choisie
 const getFilteredCompositions = (idArmyName) => {
   if (!idArmyName || !armyStore.army || !armiesComposition.value) return [];
 
@@ -201,18 +211,45 @@ const getFilteredCompositions = (idArmyName) => {
   return Array.from(uniqueCompositions.values());
 };
 
+// Image dynamique
 const getArmyImageUrl = (armyId) => {
   const photo = armyPhotos.value.find(p => p.armyName_idArmyName === armyId);
   return photo ? `/img/armees/${photo.photoArmyName}` : '/img/armees/tow-battle.png';
 };
 
+// Chargement du rapport existant si un ID est présent
+const loadBattleReport = async (id) => {
+  try {
+    const report = await battleReportStore.fetchBattleReportById(id);
+    battleTitle.value = report.nameBattleReport;
+    description.value = report.descriptionBattleReport;
+    scenario.value = report.scenario_idScenario;
+    armyPoints.value = report.armyPoints;
+
+    if (report.players?.length) {
+      numberOfPlayers.value = report.players.length;
+      players.value = report.players.map((p, index) => ({
+        id: index,
+        name: p.playerName,
+        score: Number(p.playerScore),
+        alliance: p.alliance_idAlliance,
+        army: p.armyName_idArmyName,
+        armyComposition: p.armyComposition_idArmyComposition
+      }));
+    }
+  } catch (error) {
+    console.error('Erreur lors du chargement du rapport :', error);
+  }
+};
+
+// Sauvegarde (création ou mise à jour)
 const saveBattleReport = () => {
   const reportToSend = {
     nameBattleReport: battleTitle.value,
     descriptionBattleReport: description.value,
     scenario_idScenario: scenario.value,
     battleReportPhoto_idBattleReportPhoto: 1,
-    armyPoints : armyPoints.value,
+    armyPoints: armyPoints.value,
     players: players.value.map(p => ({
       playerName: p.name || null,
       playerScore: p.score != null ? String(p.score) : null,
@@ -222,17 +259,26 @@ const saveBattleReport = () => {
     }))
   };
 
-  battleReportStore.addBattleReport(reportToSend)
-    .then(() => {
-      // Tu peux mettre un message dans le store ou autre, ici pas besoin de localStorage
-      router.push('/AllBattleReports');
-    })
+  const action = reportId
+    ? battleReportStore.updateBattleReport(reportId, reportToSend)
+    : battleReportStore.addBattleReport(reportToSend);
+
+  action
+    .then(() => router.push('/AllBattleReports'))
     .catch(err => {
       console.error('Erreur lors de la sauvegarde :', err);
       alert('Une erreur est survenue. Vérifiez la console.');
     });
 };
+
+// Chargement initial si édition
+onMounted(() => {
+  if (reportId) {
+    loadBattleReport(reportId);
+  }
+});
 </script>
+
 
 <style scoped>
 .background {
