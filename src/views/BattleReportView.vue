@@ -108,13 +108,23 @@ onMounted(async () => {
   if (battleReport.value) {
     players.value = battleReport.value.players ?? [];
     const allianceScores = {};
+
+    // Calculer les scores par alliance (sauf 4) et garder aussi les joueurs solos dans un tableau
+    const soloPlayers = [];
+
     for (const player of players.value) {
       const allianceId = player.alliance_idAlliance;
+      const playerScore = Number(player.playerScore) || 0;
+
       if (allianceId !== 4) {
-        allianceScores[allianceId] = (allianceScores[allianceId] || 0) + (Number(player.playerScore) || 0);
+        allianceScores[allianceId] = (allianceScores[allianceId] || 0) + playerScore;
+      } else {
+        // joueur solo
+        soloPlayers.push({ player, playerScore });
       }
     }
 
+    // Trouver la ou les alliances gagnantes (score max)
     let maxAllianceScore = 0;
     let winningAllianceIds = [];
     for (const [allianceId, totalScore] of Object.entries(allianceScores)) {
@@ -125,10 +135,36 @@ onMounted(async () => {
         winningAllianceIds.push(Number(allianceId));
       }
     }
-    players.value = players.value.map(p => ({
-      ...p,
-      isWinner: winningAllianceIds.includes(p.alliance_idAlliance) && p.alliance_idAlliance !== 4
-    }));
+
+    // Trouver le score max parmi les joueurs solos
+    let maxSoloScore = 0;
+    soloPlayers.forEach(({ playerScore }) => {
+      if (playerScore > maxSoloScore) {
+        maxSoloScore = playerScore;
+      }
+    });
+
+    // Comparer score max solo et score max alliance
+    if (maxSoloScore > maxAllianceScore) {
+      // Les gagnants sont uniquement les joueurs solos ayant ce maxSoloScore
+      players.value = players.value.map(p => ({
+        ...p,
+        isWinner: p.alliance_idAlliance === 4 && Number(p.playerScore) === maxSoloScore
+      }));
+    } else if (maxSoloScore === maxAllianceScore && maxSoloScore > 0) {
+      // Cas égalité : gagnants sont ceux des alliances gagnantes + joueurs solos au même score max
+      players.value = players.value.map(p => ({
+        ...p,
+        isWinner: (winningAllianceIds.includes(p.alliance_idAlliance) && p.alliance_idAlliance !== 4) ||
+                  (p.alliance_idAlliance === 4 && Number(p.playerScore) === maxSoloScore)
+      }));
+    } else {
+      // Gagnants = joueurs dans alliances gagnantes uniquement
+      players.value = players.value.map(p => ({
+        ...p,
+        isWinner: winningAllianceIds.includes(p.alliance_idAlliance) && p.alliance_idAlliance !== 4
+      }));
+    }
 
     // Photos statiques exemples
     battlePhotos.value = [

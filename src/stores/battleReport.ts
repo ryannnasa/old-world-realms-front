@@ -1,4 +1,4 @@
-import { defineStore } from 'pinia'
+import { defineStore } from 'pinia';
 
 type Player = {
   name: string;
@@ -29,7 +29,9 @@ export const useBattleReportStore = defineStore('battleReport', {
     getBattleReport() {
       return fetch('http://localhost:8080/battlereport')
         .then(res => res.json())
-        .then(data => this.battleReports = data)
+        .then(data => {
+          this.battleReports = data;
+        })
         .catch(err => console.error('Erreur API: ', err));
     },
 
@@ -122,21 +124,22 @@ export const useBattleReportStore = defineStore('battleReport', {
           throw err;
         });
     },
-    checkBattleReportSuccess() {
-  const action = localStorage.getItem('battleReportSuccess');
-  if (action) {
-    this.battleReportAction = action;
-    this.battleReportSuccess = true;
-  } else {
-    this.battleReportSuccess = false;
-    this.battleReportAction = null;
-  }
-},
 
-clearBattleReportSuccess() {
-  localStorage.removeItem('battleReportSuccess');
-  this.battleReportSuccess = false;
-  this.battleReportAction = null;
-},
+    checkBattleReportSuccess() {
+      const action = localStorage.getItem('battleReportSuccess');
+      if (action) {
+        this.battleReportAction = action;
+        this.battleReportSuccess = true;
+      } else {
+        this.battleReportSuccess = false;
+        this.battleReportAction = null;
+      }
+    },
+
+    clearBattleReportSuccess() {
+      localStorage.removeItem('battleReportSuccess');
+      this.battleReportSuccess = false;
+      this.battleReportAction = null;
+    },
   },
 });

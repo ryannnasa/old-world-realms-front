@@ -218,28 +218,29 @@ const getArmyImageUrl = (armyId) => {
 };
 
 // Chargement du rapport existant si un ID est présent
-const loadBattleReport = async (id) => {
-  try {
-    const report = await battleReportStore.fetchBattleReportById(id);
-    battleTitle.value = report.nameBattleReport;
-    description.value = report.descriptionBattleReport;
-    scenario.value = report.scenario_idScenario;
-    armyPoints.value = report.armyPoints;
+const loadBattleReport = (id) => {
+  battleReportStore.fetchBattleReportById(id)
+    .then(report => {
+      battleTitle.value = report.nameBattleReport;
+      description.value = report.descriptionBattleReport;
+      scenario.value = report.scenario_idScenario;
+      armyPoints.value = report.armyPoints;
 
-    if (report.players?.length) {
-      numberOfPlayers.value = report.players.length;
-      players.value = report.players.map((p, index) => ({
-        id: index,
-        name: p.playerName,
-        score: Number(p.playerScore),
-        alliance: p.alliance_idAlliance,
-        army: p.armyName_idArmyName,
-        armyComposition: p.armyComposition_idArmyComposition
-      }));
-    }
-  } catch (error) {
-    console.error('Erreur lors du chargement du rapport :', error);
-  }
+      if (report.players?.length) {
+        numberOfPlayers.value = report.players.length;
+        players.value = report.players.map((p, index) => ({
+          id: index,
+          name: p.playerName,
+          score: Number(p.playerScore),
+          alliance: p.alliance_idAlliance,
+          army: p.armyName_idArmyName,
+          armyComposition: p.armyComposition_idArmyComposition
+        }));
+      }
+    })
+    .catch(error => {
+      console.error('Erreur lors du chargement du rapport :', error);
+    });
 };
 
 // Sauvegarde (création ou mise à jour)
@@ -259,9 +260,12 @@ const saveBattleReport = () => {
     }))
   };
 
-  const action = reportId
-    ? battleReportStore.updateBattleReport(reportId, reportToSend)
-    : battleReportStore.addBattleReport(reportToSend);
+  let action;
+  if (reportId) {
+    action = battleReportStore.updateBattleReport({ ...reportToSend, idBattleReport: reportId });
+  } else {
+    action = battleReportStore.postBattleReport(reportToSend);
+  }
 
   action
     .then(() => router.push('/AllBattleReports'))
@@ -278,7 +282,6 @@ onMounted(() => {
   }
 });
 </script>
-
 
 <style scoped>
 .background {
