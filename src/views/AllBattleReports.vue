@@ -357,14 +357,17 @@ function editReport(id) {
   router.push({ name: 'Modify A New Battle Report', params: { id } });
 }
 
-async function deleteReport(id) {
-  try {
-    await battleReportStore.deleteBattleReport(id);
-    await fetchReports();
-    snackbar.value = true;
-  } catch (err) {
-    console.error('Erreur lors de la suppression:', err);
-  }
+function deleteReport(id) {
+  battleReportStore.deleteBattleReport(id)
+    .then(() => {
+      return fetchReports();
+    })
+    .then(() => {
+      snackbar.value = true;
+    })
+    .catch(err => {
+      console.error('Erreur lors de la suppression:', err);
+    });
 }
 </script>
 

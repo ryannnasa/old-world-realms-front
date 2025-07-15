@@ -94,85 +94,80 @@ function getAllianceName(allianceId) {
   return alliance ? alliance.allianceName : 'Inconnue';
 }
 
-onMounted(async () => {
-  await Promise.all([
+onMounted(() => {
+  Promise.all([
     armyPhotoStore.getArmyPhoto(),
     armyNameStore.getArmyName(),
     allianceStore.getAlliance(),
     battleReportStore.getBattleReport()
-  ]);
+  ]).then(() => {
+    const id = parseInt(route.params.id);
+    battleReport.value = battleReportStore.battleReports.find(b => b.idBattleReport === id);
 
-  const id = parseInt(route.params.id);
-  battleReport.value = battleReportStore.battleReports.find(b => b.idBattleReport === id);
+    if (battleReport.value) {
+      players.value = battleReport.value.players ?? [];
+      const allianceScores = {};
+      const soloPlayers = [];
 
-  if (battleReport.value) {
-    players.value = battleReport.value.players ?? [];
-    const allianceScores = {};
+      players.value.forEach(player => {
+        const allianceId = player.alliance_idAlliance;
+        const playerScore = Number(player.playerScore) || 0;
 
-    // Calculer les scores par alliance (sauf 4) et garder aussi les joueurs solos dans un tableau
-    const soloPlayers = [];
+        if (allianceId !== 4) {
+          allianceScores[allianceId] = (allianceScores[allianceId] || 0) + playerScore;
+        } else {
+          soloPlayers.push({ player, playerScore });
+        }
+      });
 
-    for (const player of players.value) {
-      const allianceId = player.alliance_idAlliance;
-      const playerScore = Number(player.playerScore) || 0;
+      let maxAllianceScore = 0;
+      let winningAllianceIds = [];
 
-      if (allianceId !== 4) {
-        allianceScores[allianceId] = (allianceScores[allianceId] || 0) + playerScore;
+      Object.entries(allianceScores).forEach(([allianceId, totalScore]) => {
+        if (totalScore > maxAllianceScore) {
+          maxAllianceScore = totalScore;
+          winningAllianceIds = [Number(allianceId)];
+        } else if (totalScore === maxAllianceScore) {
+          winningAllianceIds.push(Number(allianceId));
+        }
+      });
+
+      let maxSoloScore = 0;
+      soloPlayers.forEach(({ playerScore }) => {
+        if (playerScore > maxSoloScore) {
+          maxSoloScore = playerScore;
+        }
+      });
+
+      if (maxSoloScore > maxAllianceScore) {
+        players.value = players.value.map(p => ({
+          ...p,
+          isWinner: p.alliance_idAlliance === 4 && Number(p.playerScore) === maxSoloScore
+        }));
+      } else if (maxSoloScore === maxAllianceScore && maxSoloScore > 0) {
+        players.value = players.value.map(p => ({
+          ...p,
+          isWinner:
+            (winningAllianceIds.includes(p.alliance_idAlliance) && p.alliance_idAlliance !== 4) ||
+            (p.alliance_idAlliance === 4 && Number(p.playerScore) === maxSoloScore)
+        }));
       } else {
-        // joueur solo
-        soloPlayers.push({ player, playerScore });
+        players.value = players.value.map(p => ({
+          ...p,
+          isWinner: winningAllianceIds.includes(p.alliance_idAlliance) && p.alliance_idAlliance !== 4
+        }));
       }
+
+      battlePhotos.value = [
+        '/img/Bretonniens/BREChevaliersDuGraal01.jpg',
+        '/img/Bretonniens/BREChevaliersDuGraal02.jpg',
+      ];
     }
-
-    // Trouver la ou les alliances gagnantes (score max)
-    let maxAllianceScore = 0;
-    let winningAllianceIds = [];
-    for (const [allianceId, totalScore] of Object.entries(allianceScores)) {
-      if (totalScore > maxAllianceScore) {
-        maxAllianceScore = totalScore;
-        winningAllianceIds = [Number(allianceId)];
-      } else if (totalScore === maxAllianceScore) {
-        winningAllianceIds.push(Number(allianceId));
-      }
-    }
-
-    // Trouver le score max parmi les joueurs solos
-    let maxSoloScore = 0;
-    soloPlayers.forEach(({ playerScore }) => {
-      if (playerScore > maxSoloScore) {
-        maxSoloScore = playerScore;
-      }
-    });
-
-    // Comparer score max solo et score max alliance
-    if (maxSoloScore > maxAllianceScore) {
-      // Les gagnants sont uniquement les joueurs solos ayant ce maxSoloScore
-      players.value = players.value.map(p => ({
-        ...p,
-        isWinner: p.alliance_idAlliance === 4 && Number(p.playerScore) === maxSoloScore
-      }));
-    } else if (maxSoloScore === maxAllianceScore && maxSoloScore > 0) {
-      // Cas égalité : gagnants sont ceux des alliances gagnantes + joueurs solos au même score max
-      players.value = players.value.map(p => ({
-        ...p,
-        isWinner: (winningAllianceIds.includes(p.alliance_idAlliance) && p.alliance_idAlliance !== 4) ||
-                  (p.alliance_idAlliance === 4 && Number(p.playerScore) === maxSoloScore)
-      }));
-    } else {
-      // Gagnants = joueurs dans alliances gagnantes uniquement
-      players.value = players.value.map(p => ({
-        ...p,
-        isWinner: winningAllianceIds.includes(p.alliance_idAlliance) && p.alliance_idAlliance !== 4
-      }));
-    }
-
-    // Photos statiques exemples
-    battlePhotos.value = [
-      '/img/Bretonniens/BREChevaliersDuGraal01.jpg',
-      '/img/Bretonniens/BREChevaliersDuGraal02.jpg',
-    ];
-  }
+  }).catch(err => {
+    console.error('Erreur dans onMounted:', err);
+  });
 });
+
 </script>
 
 <style scoped>

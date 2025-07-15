@@ -5,10 +5,9 @@
         <img src="/img/Logo Old World Realms.png" alt="Logo" class="logo">
       </a>
 
-      <v-btn>Règles du Jeu</v-btn>
-      <v-btn text to="/allunits">Armées</v-btn>
-      <v-btn text>Listes d'Armées</v-btn>
-      <v-btn text to="/allbattlereports" router>Rapports de Batailles</v-btn>
+      <v-btn text to="/homepage" router>Accueil</v-btn>
+      <v-btn text to="/allbattlereports" router>Mes Rapports de Batailles</v-btn>
+      <v-btn text to="/createabattlereport" router>Créer un Rapport de Bataille</v-btn>
 
       <v-spacer></v-spacer>
       <div ref="searchContainer" class="search-container">
@@ -31,9 +30,6 @@
           />
         </v-expand-x-transition>
       </div>
-
-      <v-btn text>Soutenir</v-btn>
-      <v-btn>Compte</v-btn>
       <v-btn icon >
         <v-icon>mdi-account</v-icon>
       </v-btn>
@@ -65,7 +61,6 @@ const keepSearchOpen = () => {
   showSearch.value = true;
 };
 
-// Ferme la barre si on clique en dehors
 const handleClickOutside = (event: MouseEvent) => {
   if (
     searchContainer.value &&
@@ -88,33 +83,32 @@ onUnmounted(() => {
 .my-app-bar {
   margin-top: 16px;
   border-radius: 16px;
-  height: 64px; /* Hauteur de la toolbar */
+  height: 64px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   left: 50% !important;
   transform: translateX(-50%) !important;
-  max-width: 95%;
-  /* Changer la couleur de fond de la toolbar */
-  background-color: #61503b !important; /* Exemple avec une couleur bleue foncée */
-
-  color: white !important; /* Les éléments à l'intérieur de la toolbar auront la couleur blanche */
+  max-width: 80%;
+  background-color: #332018 !important;
+  color: white !important;
+  opacity : 0.9 !important;
 }
 
 .d-flex {
   display: flex;
   justify-content: space-between;
-  align-items: center; /* Centrer verticalement les éléments */
+  align-items: center;
   width: 100%;
 }
 
 .logo-link {
-  display: flex; /* Utilise flexbox pour centrer le logo */
-  align-items: center; /* Centrer verticalement le logo */
-  justify-content: center; /* Centrer horizontalement le logo */
+  display: flex;
+  align-items: center;
+  justify-content: center;
   height: 100%;
 }
 
 .logo {
-  height: 80px; /* Ajuster la hauteur du logo à une taille fixe */
+  height: 80px;
   width: auto;
   object-fit: contain;
 }
