@@ -30,8 +30,8 @@ export const useBattleReportStore = defineStore('battleReport', {
       return fetch('http://localhost:8080/battlereport')
         .then(res => res.json())
         .then(data => {
-          this.battleReports = data;
-        })
+  this.battleReports = data;
+})
         .catch(err => console.error('Erreur API: ', err));
     },
 
@@ -49,6 +49,24 @@ export const useBattleReportStore = defineStore('battleReport', {
         })
         .catch(err => {
           console.error('Erreur API (fetchBattleReportById):', err);
+          throw err;
+        });
+    },
+
+    fetchBattleReportByUserId(id: String) {
+      return fetch(`http://localhost:8080/battlereport/user/${id}`)
+        .then(res => {
+          if (!res.ok) {
+                        console.log('Erreur API (fetchBattleReportByUserId):', res.statusText);
+            throw new Error('Battle report introuvable');
+          }
+          return res.json();
+        })
+        .then(data => {
+          this.battleReports = data;
+        })
+        .catch(err => {
+          console.error('Erreur API (fetchBattleReportByUserId):', err);
           throw err;
         });
     },

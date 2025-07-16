@@ -140,6 +140,7 @@ import { useArmyPhotoStore } from '@/stores/armyPhoto';
 import { useArmyNameStore } from '@/stores/armyName';
 import { useAllianceStore } from '@/stores/alliance';
 import { useScenarioStore } from '@/stores/scenario';
+import { useProfileStore } from '@/stores/profile';
 import _ from 'lodash';
 
 const router = useRouter();
@@ -161,6 +162,7 @@ const selectedOpponent = ref('');
 const selectedScenario = ref('');
 const selectedPoints = ref(null);
 const NoAlliance = 4;
+const profileStore = useProfileStore();
 
 function resetFilters() {
   selectedFaction.value = '';
@@ -199,7 +201,6 @@ function confirmDelete() {
     idToDelete.value = null;
   }
 }
-
 
 const filteredReports = computed(() => {
   return reports.value.filter(report => {
@@ -282,7 +283,7 @@ function fetchReports() {
   return armyPhotoStore.getArmyPhoto()
     .then(() => armyNameStore.getArmyName())
     .then(() => allianceStore.getAlliance())
-    .then(() => battleReportStore.getBattleReport())
+    .then(() => battleReportStore.fetchBattleReportByUserId(profileStore.profile.id))
     .then(() => {
       reports.value = battleReportStore.battleReports.map(report => {
         const players = report.players?.map(p => ({

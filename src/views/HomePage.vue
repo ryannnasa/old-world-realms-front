@@ -27,18 +27,8 @@
 
     <!-- 2. Présentation du site -->
 <v-container class="py-16" style="min-height: 80vh;">
-  <v-row
-    justify="space-between"
-    align="center"
-    style="flex-wrap: nowrap;"
-  >
-    <!-- Texte à gauche -->
-    <v-col
-      cols="12"
-      md="6"
-      class="text-center text-md-left"
-      style="max-width: 42rem; margin-left: 0;"
-    >
+  <v-row justify="space-between" align="center" style="flex-wrap: nowrap;">
+    <v-col cols="12" md="6" class="text-center text-md-left" style="max-width: 42rem; margin-left: 0;">
       <h1 class="text-h3 font-weight-bold mb-8" style="max-width: none;">
         Bienvenue sur Old World Realms
       </h1>
@@ -52,8 +42,6 @@
         Grâce à notre communauté passionnée, vous pouvez non seulement consulter les règles, mais aussi partager vos propres campagnes, échanger stratégies et récits, et vivre l’expérience immersive d’un monde en perpétuelle évolution. Embarquez pour une aventure unique où chaque bataille façonne l’histoire du Vieux Monde.
       </p>
     </v-col>
-
-    <!-- Image à droite -->
     <v-col
       cols="12"
       md="6"
@@ -85,11 +73,7 @@
       <p class="text-body-1 text-center mb-6">
         Redécouvrez les derniers récits de batailles que vous avez vécu.
       </p>
-
-      <!-- Carrousel manuel fluide -->
       <div class="carousel-wrapper d-flex justify-center align-center mb-4">
-
-
         <div class="carousel-container">
           <v-window v-model="currentPage" show-arrows continuous>
 
@@ -218,14 +202,10 @@ const scenarioStore = useScenarioStore();
 
 const reports = ref([]);
 const NoAlliance = 4;
-// Nombre de rapports par "page" du carrousel
 const reportsPerPage = 6;
 const currentPage = ref(0);
 
-// Exemple reports (à remplacer par ta vraie source)
-reports.value = [
-  /* ton tableau de rapports déjà formaté */
-];
+reports.value = [];
 
 const chunkedReports = computed(() => {
   const chunks = [];
@@ -235,10 +215,8 @@ const chunkedReports = computed(() => {
   return chunks;
 });
 
-// Calcul du nombre total de pages
 const totalPages = computed(() => Math.ceil(reports.value.length / reportsPerPage));
 
-// Extraction des rapports visibles sur la page courante
 const pagedReports = computed(() => {
   const start = (currentPage.value - 1) * reportsPerPage;
   return reports.value.slice(start, start + reportsPerPage);
@@ -251,8 +229,6 @@ function prevPage() {
 function nextPage() {
   currentPage.value = currentPage.value < totalPages.value ? currentPage.value + 1 : 1;
 }
-
-
 
 function groupedByAlliance(players) {
   const groupedObj = _.groupBy(players, player => {
@@ -473,12 +449,10 @@ onMounted(() => {
 }
 
 .carousel-item {
-  flex: 0 0 calc(100% / 3); /* 3 cartes par page */
+  flex: 0 0 calc(100% / 3);
   padding: 8px;
 }
 
-
-/* Animation slide */
 .slide-enter-active, .slide-leave-active {
   transition: all 0.5s ease;
 }
@@ -493,18 +467,16 @@ onMounted(() => {
   transform: translateX(-100%);
 }
 
-/* Boutons flèches */
 .v-btn {
   background-color: transparent !important;
   border-radius: 5%;
 }
 
 .v-btn:hover {
-  background-color: #332018 !important; /* amber darken-2 */
+  background-color: #332018 !important;
 }
 
-/* Couleur icones */
 .v-icon {
-  color: #332018; /* amber darken-2 */
+  color: #332018;
 }
 </style>

@@ -11,6 +11,7 @@ import * as directives from 'vuetify/directives'
 import '@mdi/font/css/materialdesignicons.css'
 import Keycloak from 'keycloak-js'
 import keycloakConfig from './keycloak-config'
+import { useProfileStore, type Profile } from './stores/profile'
 
 const keycloak = new Keycloak(keycloakConfig)
 
@@ -21,10 +22,14 @@ const initOptions = {
 
 keycloak.init(initOptions).then(authenticated => {
   console.log("Keycloak", keycloak, authenticated)
-  keycloak.loadUserProfile().then(profile=>{console.log(profile)})
+  keycloak.loadUserProfile().then(profile => {
+    useProfileStore().getProfile(profile as Profile)
+    profile=>{console.log(profile)}})
   if (!authenticated) {
     console.log("User is not authenticated. Redirecting to login page.")
     keycloak.login()
+    
+
   }
 
 

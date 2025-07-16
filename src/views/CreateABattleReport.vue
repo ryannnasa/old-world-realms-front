@@ -120,6 +120,7 @@ import { useArmyStore } from '@/stores/army';
 import { useArmyPhotoStore } from '@/stores/armyPhoto';
 import { usePlayerStore } from '@/stores/player';
 import { useBattleReportStore } from '@/stores/battleReport';
+import { useProfileStore } from '@/stores/profile';
 
 // Stores
 const route = useRoute();
@@ -134,6 +135,7 @@ const armyStore = useArmyStore();
 const armyPhotoStore = useArmyPhotoStore();
 const playerStore = usePlayerStore();
 const battleReportStore = useBattleReportStore();
+const profileStore = useProfileStore();
 
 // Données
 const battleTitle = ref('');
@@ -251,6 +253,7 @@ const saveBattleReport = () => {
     scenario_idScenario: scenario.value,
     battleReportPhoto_idBattleReportPhoto: 1,
     armyPoints: armyPoints.value,
+    idUser: profileStore.profile.id,
     players: players.value.map(p => ({
       playerName: p.name || null,
       playerScore: p.score != null ? String(p.score) : null,
