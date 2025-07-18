@@ -4,6 +4,7 @@ import CreateABattleReport from '@/views/CreateABattleReport.vue'
 import AllBattleReports from '@/views/AllBattleReports.vue'
 import BattleReportView from '@/views/BattleReportView.vue'
 import HomePage from '@/views/HomePage.vue'
+import MyAccount from '@/views/MyAccount.vue'
 
 const routes = [
   {
@@ -43,14 +44,14 @@ const routes = [
     path: '/allunits',
     name: 'All Units',
     component : AllUnits
+  },
+
+  {
+    path: '/myaccount',
+    name: 'My Account',
+    component : MyAccount
   }
 
-  // Commenter ou supprimer cette section si vous n'avez pas le fichier AboutView.vue
-  // {
-  //   path: '/about',
-  //   name: 'about',
-  //   component: () => import('../views/AboutView.vue')
-  // }
 ]
 
 const router = createRouter({

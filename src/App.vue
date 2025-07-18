@@ -36,4 +36,19 @@ function onSearch(searchQuery : string){
   min-height: 100vh;
   padding: 20px;
 }
+
+</style>
+
+<style>
+/* Retirer les flèches sur input type number dans Chrome, Edge, Safari */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Retirer les flèches sur Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+}
 </style>

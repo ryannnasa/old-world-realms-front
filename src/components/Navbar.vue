@@ -30,7 +30,7 @@
           />
         </v-expand-x-transition>
       </div>
-      <v-btn icon >
+      <v-btn icon text to="/myaccount" router>
         <v-icon>mdi-account</v-icon>
       </v-btn>
     </div>

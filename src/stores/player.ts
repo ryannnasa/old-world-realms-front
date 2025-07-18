@@ -1,6 +1,13 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 
+type Player = {
+  name: string;
+  faction: string;
+  armyName?: string;
+  points?: number;
+};
+
 export const usePlayerStore = defineStore('player', {
   state: () => ({ player: [] }),
   actions: {
@@ -10,7 +17,7 @@ export const usePlayerStore = defineStore('player', {
         .then(data => this.player = data)
         .catch(err => console.error('Erreur API: ', err));
     },
- addPlayer(player) {
+ addPlayer(player : Player) {
   return fetch('http://localhost:8080/player', {
     method: 'POST',
     headers: {
@@ -20,7 +27,7 @@ export const usePlayerStore = defineStore('player', {
   })
     .then(res => {
       if (!res.ok) throw new Error('Erreur lors de la création du joueur');
-      return res.json(); // ou `.text()` si ton back ne retourne que l'ID
+      return res.json();
     });
 }
   }})
