@@ -67,17 +67,17 @@
         
         <v-col cols="12" md="6" class="text-center text-md-right">
           <div class="social-links">
-            <v-btn icon small href="#" class="social-btn">
+            <v-btn icon small href="https://www.facebook.com/WarhammerOfficial" target="_blank" class="social-btn">
               <v-icon>mdi-facebook</v-icon>
             </v-btn>
-            <v-btn icon small href="#" class="social-btn">
-              <v-icon>mdi-twitter</v-icon>
+            <v-btn icon small href="https://www.instagram.com/warhammer.fra/" target="_blank" class="social-btn">
+              <v-icon>mdi-instagram</v-icon>
             </v-btn>
-            <v-btn icon small href="#" class="social-btn">
-              <v-icon>mdi-discord</v-icon>
+            <v-btn icon small href="https://theoldworld.com/fr/" target="_blank" class="social-btn">
+              <v-icon>mdi-web</v-icon>
             </v-btn>
-            <v-btn icon small href="#" class="social-btn">
-              <v-icon>mdi-reddit</v-icon>
+            <v-btn icon small href="https://github.com/ryannnasa" target="_blank" class="social-btn">
+              <v-icon>mdi-github</v-icon>
             </v-btn>
           </div>
         </v-col>
@@ -102,7 +102,7 @@ const currentYear = computed(() => new Date().getFullYear());
 }
 
 .footer-logo {
-  height: 60px;
+  height: 200px;
   width: auto;
   object-fit: contain;
 }

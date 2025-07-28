@@ -1,4 +1,3 @@
-import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 
 export const useMountRuleStore = defineStore('mountRule', {
@@ -7,7 +6,7 @@ export const useMountRuleStore = defineStore('mountRule', {
       getMountRule() {
         fetch('http://localhost:8080/mountrule')
         .then(res => res.json())
-        .then(data => this.mountRUle = data)
+        .then(data => this.mountRule = data)
         .catch(err => console.error('Erreur API: ', err));
       },
     },

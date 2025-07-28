@@ -76,6 +76,7 @@ export const useBattleReportStore = defineStore('battleReport', {
     },
 
     deleteBattleReport(id: number) {
+      // Suppression du rapport (les photos seront supprimées automatiquement côté serveur)
       return fetch(`http://localhost:8080/battlereport/${id}`, { method: 'DELETE' })
         .then(response => {
           if (!response.ok) throw new Error('Erreur lors de la suppression du rapport');

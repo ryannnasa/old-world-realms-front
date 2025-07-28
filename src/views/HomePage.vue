@@ -14,9 +14,18 @@
       >
         <v-img :src="item.image" height="100%" cover>
           <div class="d-flex align-center justify-center fill-height text-center">
-            <div class="white--text px-6">
+            <div class="carousel-text px-6">
               <h2 class="text-h3 font-weight-bold mb-4">{{ item.title }}</h2>
-              <p class="text-subtitle-1">{{ item.description }}</p>
+              <p class="text-subtitle-1 mb-4">{{ item.description }}</p>
+              <!-- Bouton dynamique si défini dans les données -->
+              <v-btn
+                v-if="item.button"
+                class="carousel-button mt-4"
+                @click="handleButtonClick(item.button)"
+              >
+                <v-icon left v-if="item.button.icon">{{ item.button.icon }}</v-icon>
+                {{ item.button.text }}
+              </v-btn>
             </div>
           </div>
         </v-img>
@@ -172,6 +181,7 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue';
+import { useRouter } from 'vue-router';
 import { useBattleReportStore } from '@/stores/battleReport';
 import { useArmyPhotoStore } from '@/stores/armyPhoto';
 import { useArmyNameStore } from '@/stores/armyName';
@@ -180,6 +190,7 @@ import { useScenarioStore } from '@/stores/scenario';
 import { useAuthStore } from '@/stores/auth';
 import _ from 'lodash';
 
+const router = useRouter();
 const battleReportStore = useBattleReportStore();
 const armyPhotoStore = useArmyPhotoStore();
 const armyNameStore = useArmyNameStore();
@@ -285,44 +296,46 @@ function fetchReports() {
     });
 }
 
-const articles = [
-  {
-    title: "The Old World: A new beginning",
-    summary: "Découvrez le retour épique de Warhammer: The Old World avec de nouvelles factions, règles et histoires.",
-    image: "https://www.warhammer-community.com/wp-content/uploads/2023/06/old-world-banner.jpg",
-    link: "https://www.warhammer-community.com/2023/06/12/the-old-world-a-new-beginning/"
-  },
-  {
-    title: "Factions revealed: Skaven",
-    summary: "Tout savoir sur les Skavens et leur influence sournoise dans le Vieux Monde.",
-    image: "https://www.warhammer-community.com/wp-content/uploads/2023/06/skaven-banner.jpg",
-    link: "https://www.warhammer-community.com/2023/06/15/factions-revealed-skaven/"
-  },
-  {
-    title: "Upcoming scenarios for Warhammer: The Old World",
-    summary: "Préparez-vous aux nouveaux scénarios qui viendront enrichir vos parties et campagnes.",
-    image: "https://www.warhammer-community.com/wp-content/uploads/2023/06/scenario-banner.jpg",
-    link: "https://www.warhammer-community.com/2023/06/20/upcoming-scenarios/"
-  }
-];
-
 const siteNews = [
   {
-    title: "Nouveaux rapports disponibles",
-    description: "La campagne des Pierres des Hardes continue, découvrez les derniers affrontements !",
-    image: "/public/img/carrousel/carrousel1.webp",
+    title: "Le Grand Cathay",
+    description: "Miao Ying, la Reine-Dragon, est désormais disponible ! Détaillez vos meilleurs rapports de batailles avec cette nouvelle armée.",
+    image: "/public/img/carrousel/carrousel1.webp"
   },
   {
-    title: "Codex Skaven mis à jour",
-    description: "Les règles Skaven complètes sont désormais en ligne.",
+    title: "Rapports de Batailles Fonctionnels",
+    description: "Vous pouvez désormais créer et partager vos rapports de batailles avec des images et des détails sur les armées.",
     image: "/public/img/carrousel/carrousel2.jpg",
+    button: {
+      text: "Voir mes rapports",
+      icon: "mdi-view-list",
+      action: "navigate",
+      target: "/allbattlereports"
+    }
   },
   {
-    title: "Créateur de listes amélioré",
-    description: "Ajoutez vos héros personnalisés et imprimez vos listes plus facilement.",
+    title: "Vos retours comptent",
+    description: "Vos retours sont précieux pour améliorer le site. Partagez vos idées et suggestions !",
     image: "/public/img/carrousel/carrousel3.jpg",
+    button: {
+      text: "Contactez-nous",
+      icon: "mdi-email-outline",
+      action: "navigate",
+      target: "/contact"
+    }
   },
 ]
+
+// Fonction pour gérer les clics de boutons du carrousel
+const handleButtonClick = (button) => {
+  if (button.action === 'navigate' && button.target) {
+    router.push(button.target);
+  } else if (button.action === 'external' && button.target) {
+    window.open(button.target, '_blank');
+  } else if (button.action === 'custom' && button.handler) {
+    button.handler();
+  }
+};
 
 onMounted(() => {
   Promise.all([
@@ -462,6 +475,60 @@ onMounted(() => {
 
 .v-icon {
   color: #332018;
+}
+
+/* Couleur du texte du carrousel principal */
+.carousel-text {
+  color: #EBDEC2;
+}
+
+/* Bouton du carrousel - style similaire au bouton "Créer un rapport" */
+.carousel-button {
+  background-color: #332018 !important;
+  color: #EBDEC2 !important;
+  border: none !important;
+  border-radius: 4px !important;
+  font-weight: 400 !important;
+  padding: 8px 16px !important;
+  text-transform: none !important;
+  transition: all 0.2s ease-in-out !important;
+  min-width: auto !important;
+  height: auto !important;
+}
+
+.carousel-button:hover {
+  background-color: #4b2d21 !important;
+  transform: none !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
+}
+
+.carousel-button .v-icon {
+  color: #EBDEC2 !important;
+  font-size: 16px !important;
+  margin-right: 4px !important;
+}
+
+/* Responsive pour le bouton du carrousel */
+@media (max-width: 768px) {
+  .carousel-button {
+    padding: 6px 12px !important;
+    font-size: 0.9rem !important;
+  }
+  
+  .carousel-button .v-icon {
+    font-size: 14px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .carousel-button {
+    padding: 5px 10px !important;
+    font-size: 0.85rem !important;
+  }
+  
+  .carousel-button .v-icon {
+    font-size: 12px !important;
+  }
 }
 
 /* Section présentation responsive */

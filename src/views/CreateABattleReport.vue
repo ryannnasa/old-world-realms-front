@@ -50,28 +50,28 @@
     <div class="photo-grid">
       <!-- Photos existantes -->
       <div
-        v-for="(name, idx) in existingPhotoFileNames"
-        :key="'existing-' + name"
+        v-for="(photo, idx) in existingPhotos"
+        :key="'existing-' + photo.name"
         class="photo-thumbnail"
       >
-        <v-img :src="photoPreviews[idx]" aspect-ratio="1" cover />
-        <v-btn icon class="remove-btn" @click="removePhoto(name, true)">
+        <v-img :src="photo.url" aspect-ratio="1" cover />
+        <v-btn icon class="remove-btn" @click="removePhoto(photo.name, true)">
           <v-icon color="white">mdi-close</v-icon>
         </v-btn>
       </div>
       <!-- Nouvelles photos -->
       <div
-        v-for="(photo, idx) in fileBattleReportPhoto"
-        :key="'new-' + photo.name"
+        v-for="(file, idx) in selectedFiles"
+        :key="'new-' + file.name"
         class="photo-thumbnail"
       >
-        <v-img :src="photoPreviews[existingPhotoFileNames.length + idx]" aspect-ratio="1" cover />
-        <v-btn icon class="remove-btn" @click="removePhoto(photo.name, false)">
+        <v-img :src="photoPreviews[existingPhotos.length + idx]" aspect-ratio="1" cover />
+        <v-btn icon class="remove-btn" @click="removePhoto(file.name, false)">
           <v-icon color="white">mdi-close</v-icon>
         </v-btn>
       </div>
       <!-- Ajout -->
-      <div v-if="existingPhotoFileNames.length + fileBattleReportPhoto.length < 10" class="photo-add" @click="triggerFileInput">
+      <div v-if="existingPhotos.length + selectedFiles.length < 10" class="photo-add" @click="triggerFileInput">
         <v-icon size="36">mdi-plus</v-icon>
       </div>
       <input
@@ -196,7 +196,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useArmyNameStore } from '@/stores/armyName';
 import { useArmyCompositionStore } from '@/stores/armyComposition';
@@ -210,7 +210,7 @@ import _ from 'lodash';
 
 const route = useRoute();
 const router = useRouter();
-const reportId = route.params.id || null;
+const reportId = computed(() => route.params.id || null);
 
 const armyCompositionStore = useArmyCompositionStore();
 const armyNameStore = useArmyNameStore();
@@ -232,30 +232,44 @@ const alliances = computed(() => allianceStore.alliance || []);
 const armyPhotos = computed(() => armyPhotoStore.armyPhoto || []);
 const photoPreviews = ref([]);
 const fileInput = ref(null);
-const fileBattleReportPhoto = ref([]);
-const existingPhotoFileNames = ref([]);
+const selectedFiles = ref([]); // Nouveaux fichiers sélectionnés
+const existingPhotos = ref([]); // Photos existantes du rapport (nom + URL)
+
+// Fonction pour réinitialiser les données du formulaire
+const resetFormData = () => {
+  battleTitle.value = '';
+  description.value = '';
+  scenario.value = '';
+  armyPoints.value = 0;
+  photoPreviews.value = [];
+  selectedFiles.value = [];
+  existingPhotos.value = [];
+  
+  // Réinitialiser les joueurs avec les valeurs par défaut
+  players.value = [
+    { id: 0, name: authStore.profile?.username || '', alliance: '', army: '', armyComposition: '', score: 0 },
+    { id: 1, name: '', alliance: '', army: '', armyComposition: '', score: 0 }
+  ];
+  nextPlayerId = 2;
+};
 
 // Gestion des fichiers photos
 const triggerFileInput = () => {
   const maxPhotos = 10;
-  const currentCount = existingPhotoFileNames.value.length + fileBattleReportPhoto.value.length;
+  const currentCount = existingPhotos.value.length + selectedFiles.value.length;
   if (currentCount < maxPhotos) fileInput.value.click();
 };
 
 const handleFileChange = (event) => {
-  const selectedFiles = Array.from(event.target.files);
+  const newFiles = Array.from(event.target.files);
   const maxPhotos = 10;
-  const availableSlots = maxPhotos - (existingPhotoFileNames.value.length + fileBattleReportPhoto.value.length);
+  const availableSlots = maxPhotos - (existingPhotos.value.length + selectedFiles.value.length);
   
-  selectedFiles.slice(0, availableSlots).forEach((file) => {
-    const photo = {
-      name: file.name,
-      fileBattleReportPhoto: file
-    };
+  // Traiter les nouveaux fichiers
+  newFiles.slice(0, availableSlots).forEach((file) => {
+    selectedFiles.value.push(file);
     
-    fileBattleReportPhoto.value.push(photo);
-    
-    // Ajout de la preview locale
+    // Créer une preview
     const reader = new FileReader();
     reader.onload = function(e) {
       photoPreviews.value.push(e.target.result);
@@ -267,25 +281,29 @@ const handleFileChange = (event) => {
 };
 
 // Suppression d'une photo
-const removePhoto = (name, isExisting) => {
+const removePhoto = (identifier, isExisting) => {
   if (isExisting) {
-    battleReportStore.deletePhotos(reportId, [name])
+    // Supprimer une photo existante du serveur
+    const photoIndex = existingPhotos.value.findIndex(p => p.name === identifier);
+    if (photoIndex === -1) return;
+    
+    battleReportStore.deletePhotos(reportId.value, [identifier])
       .then(() => {
-        const idx = existingPhotoFileNames.value.indexOf(name);
-        if (idx !== -1) {
-          existingPhotoFileNames.value.splice(idx, 1);
-          photoPreviews.value.splice(idx, 1);
-        }
+        // Supprimer de la liste locale
+        existingPhotos.value.splice(photoIndex, 1);
+        photoPreviews.value.splice(photoIndex, 1);
       })
       .catch(err => {
-        console.error(err);
+        console.error('Erreur suppression photo:', err);
+        alert('Erreur lors de la suppression de la photo');
       });
   } else {
-    const idx = fileBattleReportPhoto.value.findIndex(p => p.name === name);
-    if (idx !== -1) {
-      fileBattleReportPhoto.value.splice(idx, 1);
-      photoPreviews.value.splice(existingPhotoFileNames.value.length + idx, 1);
-    }
+    // Supprimer un fichier nouvellement sélectionné
+    const fileIndex = selectedFiles.value.findIndex(f => f.name === identifier);
+    if (fileIndex === -1) return;
+    
+    selectedFiles.value.splice(fileIndex, 1);
+    photoPreviews.value.splice(existingPhotos.value.length + fileIndex, 1);
   }
 };
 
@@ -353,37 +371,39 @@ const saveBattleReport = () => {
       armyName_idArmyName: p.army ?? null,
       armyComposition_idArmyComposition: p.armyComposition ?? null,
     })),
-    // On ne touche pas aux photos existantes ici
   };
 
-  if (reportId) {
-    // Mise à jour du rapport existant
+  if (reportId.value) {
+    // Mode modification : mettre à jour le rapport existant
     battleReportStore.updateBattleReport({ 
       ...reportToSend, 
-      idBattleReport: reportId 
-    }).then(() => {
-      // Uploader les nouvelles photos seulement si elles existent
-      if (fileBattleReportPhoto.value.length > 0) {
-        return addPhotosToExistingReport();
+      idBattleReport: reportId.value 
+    })
+    .then(() => {
+      // Uploader les nouvelles photos si nécessaire
+      if (selectedFiles.value.length > 0) {
+        return battleReportStore.uploadPhotos(reportId.value, selectedFiles.value);
       }
       return Promise.resolve();
-    }).then(() => {
+    })
+    .then(() => {
       router.push('/AllBattleReports');
-    }).catch(err => {
+    })
+    .catch(err => {
       console.error('Erreur lors de la sauvegarde :', err);
-      alert('Une erreur est survenue. Vérifiez la console.');
+      alert('Une erreur est survenue lors de la sauvegarde.');
     });
   } else {
-    // Création d'un nouveau rapport
+    // Mode création : créer un nouveau rapport
     battleReportStore.createBattleReport(reportToSend)
       .then(data => {
         if (!data || !data.idBattleReport) {
           throw new Error('Le rapport créé n\'a pas d\'ID');
         }
         
-        if (fileBattleReportPhoto.value.length > 0) {
-          const files = fileBattleReportPhoto.value.map(photo => photo.fileBattleReportPhoto);
-          return battleReportStore.uploadPhotos(data.idBattleReport, files);
+        // Uploader les photos si nécessaire
+        if (selectedFiles.value.length > 0) {
+          return battleReportStore.uploadPhotos(data.idBattleReport, selectedFiles.value);
         }
         return Promise.resolve();
       })
@@ -392,43 +412,9 @@ const saveBattleReport = () => {
       })
       .catch(err => {
         console.error('Erreur lors de la sauvegarde :', err);
-        alert('Une erreur est survenue. Vérifiez la console.');
+        alert('Une erreur est survenue lors de la sauvegarde.');
       });
   }
-};
-
-// Ajout de photos à un rapport existant
-const addPhotosToExistingReport = () => {
-  if (!reportId || fileBattleReportPhoto.value.length === 0) {
-    return Promise.resolve();
-  }
-
-  const files = fileBattleReportPhoto.value.map(photo => photo.fileBattleReportPhoto);
-  
-  return battleReportStore.uploadPhotos(reportId, files)
-    .then((fileNames) => {
-      // Ajoute les nouveaux noms de fichiers aux existants
-      existingPhotoFileNames.value = [...existingPhotoFileNames.value, ...fileNames];
-      
-      // Vide la liste des fichiers à uploader
-      fileBattleReportPhoto.value = [];
-      
-      // Met à jour les previews avec les nouvelles images
-      return Promise.all(files.map(file => {
-        return new Promise((resolve) => {
-          const reader = new FileReader();
-          reader.onload = (e) => resolve(e.target.result);
-          reader.readAsDataURL(file);
-        });
-      }));
-    })
-    .then(newPreviews => {
-      photoPreviews.value = [...photoPreviews.value, ...newPreviews];
-    })
-    .catch(err => {
-      console.error('Erreur lors de l\'upload des photos :', err);
-      throw err;
-    });
 };
 
 // Chargement d'un rapport existant
@@ -458,22 +444,28 @@ const loadBattleReport = (id) => {
       return res.json();
     })
     .then(photoList => {
-      existingPhotoFileNames.value = photoList.map(photo => photo.nameBattleReportPhoto);
+      // Réinitialiser les photos existantes
+      existingPhotos.value = [];
+      photoPreviews.value = [];
       
-      // Créer un tableau de promesses pour chaque requête d'image
+      // Charger les photos existantes avec leurs URLs
       const photoPromises = photoList.map(photo => 
         fetch(`http://localhost:8080/image-url/${photo.nameBattleReportPhoto}`)
           .then(res => {
             if (!res.ok) throw new Error('Erreur lors du chargement de l\'image');
             return res.text();
           })
+          .then(url => ({
+            name: photo.nameBattleReportPhoto,
+            url: url
+          }))
       );
       
-      // Attendre que toutes les promesses soient résolues
       return Promise.all(photoPromises);
     })
-    .then(urls => {
-      photoPreviews.value = urls;
+    .then(photos => {
+      existingPhotos.value = photos;
+      photoPreviews.value = photos.map(photo => photo.url);
     })
     .catch(err => {
       console.error('Erreur chargement rapport:', err);
@@ -483,8 +475,37 @@ const loadBattleReport = (id) => {
 
 // Initialisation
 onMounted(() => {
-  if (reportId) {
-    loadBattleReport(reportId);
+  // Charger tous les stores nécessaires
+  Promise.all([
+    armyNameStore.getArmyName(),
+    armyCompositionStore.getArmyComposition(),
+    scenarioStore.getScenario(),
+    allianceStore.getAlliance(),
+    armyStore.getArmy(),
+    armyPhotoStore.getArmyPhoto()
+  ]).then(() => {
+    // Une fois les stores chargés, charger le rapport si c'est une modification
+    if (reportId.value) {
+      loadBattleReport(reportId.value);
+    } else {
+      // S'assurer que le formulaire est vide pour une création
+      resetFormData();
+    }
+  }).catch(err => {
+    console.error('Erreur lors du chargement des données :', err);
+  });
+});
+
+// Watcher pour détecter les changements de route (modification -> création ou vice versa)
+watch(() => route.params.id, (newId, oldId) => {
+  if (newId !== oldId) {
+    if (newId) {
+      // Passer en mode modification
+      loadBattleReport(newId);
+    } else {
+      // Passer en mode création - réinitialiser le formulaire
+      resetFormData();
+    }
   }
 });
 </script>
