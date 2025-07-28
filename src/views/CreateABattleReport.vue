@@ -100,7 +100,9 @@
       <v-col
         v-for="(player, playerIndex) in pair"
         :key="'player-' + player.id"
-        cols="6"
+        cols="12"
+        md="6"
+        class="player-column"
       >
         <!-- Nom du joueur 1 personnalisé -->
         <p class="text-h6">
@@ -186,7 +188,9 @@
 
 
       <!-- Sauvegarde -->
-      <v-btn class="save-button" @click="saveBattleReport">Enregistrer le rapport</v-btn>
+      <div class="d-flex justify-center mt-4">
+        <v-btn class="save-button" @click="saveBattleReport">Enregistrer le rapport</v-btn>
+      </div>
     </v-container>
   </div>
 </template>
@@ -501,6 +505,68 @@ onMounted(() => {
   margin-top: 80px;
   background-color: #211510;
   min-height: 100vh;
+  padding: 20px;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .page-container {
+    margin-top: 90px;
+    min-height: calc(100vh - 90px);
+    padding: 15px;
+  }
+  
+  .background {
+    padding: 15px;
+  }
+}
+
+@media (max-width: 959px) {
+  .page-container {
+    margin-top: 100px;
+    min-height: calc(100vh - 100px);
+    padding: 15px;
+  }
+  
+  .background {
+    padding: 15px;
+  }
+}
+
+@media (max-width: 768px) {
+  .page-container {
+    margin-top: 110px;
+    min-height: calc(100vh - 110px);
+    padding: 10px;
+  }
+  
+  .background {
+    padding: 10px;
+  }
+}
+
+@media (max-width: 600px) {
+  .page-container {
+    margin-top: 120px;
+    min-height: calc(100vh - 120px);
+    padding: 8px;
+  }
+  
+  .background {
+    padding: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-container {
+    margin-top: 130px;
+    min-height: calc(100vh - 130px);
+    padding: 5px;
+  }
+  
+  .background {
+    padding: 5px;
+  }
 }
 
 .card-container {
@@ -509,13 +575,129 @@ onMounted(() => {
   color: #EBDEC2;
 }
 
+/* Responsive pour les cartes */
+@media (max-width: 768px) {
+  .card-container {
+    border-radius: 12px;
+  }
+  
+  .card-container .v-card-title {
+    font-size: 1.2rem !important;
+    padding: 12px 16px !important;
+  }
+  
+  .card-container .v-card-text {
+    padding: 12px 16px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .card-container {
+    border-radius: 10px;
+  }
+  
+  .card-container .v-card-title {
+    font-size: 1.1rem !important;
+    padding: 10px 12px !important;
+  }
+  
+  .card-container .v-card-text {
+    padding: 10px 12px !important;
+  }
+}
+
 .save-button {
   background-color: #332018;
   color: #EBDEC2;
+  min-width: 250px;
+  max-width: 400px;
+  margin-bottom: 20px;
+  padding: 12px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border-radius: 8px;
+}
+
+/* Responsive pour le bouton de sauvegarde */
+@media (max-width: 768px) {
+  .save-button {
+    padding: 12px 24px !important;
+    min-width: 200px;
+    max-width: 300px;
+    border-radius: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .save-button {
+    padding: 10px 20px !important;
+    min-width: 180px;
+    max-width: 250px;
+    border-radius: 8px;
+  }
 }
 
 .input-field {
   color: #EBDEC2;
+}
+
+/* Responsive pour les champs de saisie */
+@media (max-width: 768px) {
+  .input-field {
+    margin-bottom: 12px !important;
+  }
+  
+  .input-field .v-field__input {
+    font-size: 0.95rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .input-field {
+    margin-bottom: 10px !important;
+  }
+  
+  .input-field .v-field__input {
+    font-size: 0.9rem !important;
+  }
+}
+
+/* Responsive pour les rangées de joueurs */
+@media (max-width: 768px) {
+  .mb-6 {
+    margin-bottom: 1.5rem !important;
+  }
+  
+  .player-column {
+    margin-bottom: 2rem !important;
+  }
+  
+  .player-column:not(:last-child) {
+    border-bottom: 2px solid #332018;
+    padding-bottom: 1.5rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .mb-6 {
+    margin-bottom: 1rem !important;
+  }
+  
+  .player-column {
+    margin-bottom: 1.5rem !important;
+  }
+  
+  .player-column:not(:last-child) {
+    border-bottom: 2px solid #332018;
+    padding-bottom: 1rem !important;
+  }
+  
+  .text-h6 {
+    font-size: 1.1rem !important;
+    margin-bottom: 8px !important;
+  }
 }
 
 .battle-image {
@@ -527,10 +709,60 @@ onMounted(() => {
   margin: 20px auto 0 auto;
 }
 
+/* Responsive pour les images de bataille */
+@media (max-width: 1200px) {
+  .battle-image {
+    width: 60%;
+    height: 280px;
+  }
+}
+
+@media (max-width: 959px) {
+  .battle-image {
+    width: 70%;
+    height: 250px;
+  }
+}
+
+@media (max-width: 768px) {
+  .battle-image {
+    width: 80%;
+    height: 220px;
+  }
+}
+
+@media (max-width: 600px) {
+  .battle-image {
+    width: 90%;
+    height: 200px;
+  }
+}
+
+@media (max-width: 480px) {
+  .battle-image {
+    width: 100%;
+    height: 180px;
+    margin: 15px auto 0 auto;
+  }
+}
+
 .photo-grid {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
+}
+
+/* Responsive pour la grille de photos */
+@media (max-width: 768px) {
+  .photo-grid {
+    gap: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .photo-grid {
+    gap: 6px;
+  }
 }
 
 .photo-thumbnail, .photo-add {
@@ -546,12 +778,68 @@ onMounted(() => {
   cursor: pointer;
 }
 
+/* Responsive pour les thumbnails de photos */
+@media (max-width: 768px) {
+  .photo-thumbnail, .photo-add {
+    width: 80px;
+    height: 80px;
+  }
+}
+
+@media (max-width: 480px) {
+  .photo-thumbnail, .photo-add {
+    width: 70px;
+    height: 70px;
+  }
+}
+
 .remove-btn {
   position: absolute;
   top: 2px;
   right: 2px;
   background-color: rgba(0, 0, 0, 0.6);
   padding: 2px;
+}
+
+/* Responsive pour les boutons d'action */
+@media (max-width: 768px) {
+  .remove-btn {
+    padding: 1px;
+  }
+  
+  .remove-btn .v-icon {
+    font-size: 18px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .remove-btn {
+    top: 1px;
+    right: 1px;
+    padding: 1px;
+  }
+  
+  .remove-btn .v-icon {
+    font-size: 16px !important;
+  }
+}
+
+/* Amélioration responsive pour les boutons d'ajout/suppression de joueurs */
+@media (max-width: 768px) {
+  .v-btn {
+    font-size: 0.9rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .v-btn {
+    font-size: 0.85rem !important;
+    padding: 8px 16px !important;
+  }
+  
+  .v-btn.v-btn--variant-outlined {
+    border-width: 1px !important;
+  }
 }
 
 </style>

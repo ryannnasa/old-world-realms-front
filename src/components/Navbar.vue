@@ -1,72 +1,96 @@
 <template>
-  <v-app-bar dark class="my-app-bar">
-    <div class="d-flex align-center justify-space-between w-90">
-      <a href="/homepage" class="logo-link">
-        <img src="/img/Logo Old World Realms.png" alt="Logo" class="logo">
-      </a>
+  <div class="navbar-container">
+    <v-app-bar dark class="my-app-bar">
+      <div class="d-flex align-center justify-space-between w-100">
+        <!-- Logo visible seulement sur desktop -->
+        <a href="/homepage" class="logo-link d-none d-md-flex">
+          <img src="/img/Logo Old World Realms.png" alt="Logo" class="logo">
+        </a>
 
-      <v-btn text to="/homepage" router>Accueil</v-btn>
-      <v-btn text to="/allbattlereports" router>Mes Rapports de Batailles</v-btn>
-      <v-btn text to="/createabattlereport" router>Créer un Rapport de Bataille</v-btn>
+        <!-- Navigation desktop -->
+        <div class="desktop-nav d-none d-md-flex">
+          <v-btn text to="/homepage" router>Accueil</v-btn>
+          <v-btn text to="/allbattlereports" router>Mes Rapports de Batailles</v-btn>
+          <v-btn text to="/createabattlereport" router>Créer un Rapport de Bataille</v-btn>
+        </div>
 
-      <v-spacer></v-spacer>
-      <div ref="searchContainer" class="search-container">
-        <v-btn icon @click.stop="toggleSearch">
-          <v-icon>mdi-magnify</v-icon>
-        </v-btn>
+        <!-- Account pour desktop -->
+        <div class="desktop-actions d-none d-md-flex align-center">
+          <v-btn icon text to="/myaccount" router>
+            <v-icon>mdi-account</v-icon>
+          </v-btn>
+        </div>
 
-        <v-expand-x-transition>
-          <v-text-field
-            v-if="showSearch"
-            ref="searchInput"
-            v-model="searchQuery"
-            dense
-            solo-inverted
-            hide-details
-            placeholder="Rechercher..."
-            class="search-bar"
-            @focus="keepSearchOpen"
-            @click.stop
-          />
-        </v-expand-x-transition>
+        <!-- Menu hamburger pour mobile - centré -->
+        <div class="mobile-actions d-flex d-md-none align-center justify-center">
+          <v-btn icon @click.stop="toggleMobileMenu">
+            <v-icon>{{ showMobileMenu ? 'mdi-close' : 'mdi-menu' }}</v-icon>
+          </v-btn>
+        </div>
       </div>
-      <v-btn icon text to="/myaccount" router>
-        <v-icon>mdi-account</v-icon>
-      </v-btn>
+    </v-app-bar>
+
+    <!-- Menu mobile - DÉPLACÉ EN DEHORS DE v-app-bar -->
+    <div v-if="showMobileMenu" class="mobile-menu-external">
+      <!-- Logo dans le menu mobile -->
+      <div class="mobile-logo-container">
+        <a href="/homepage" class="mobile-logo-link" @click="closeMobileMenu">
+          <img src="/img/Logo Old World Realms.png" alt="Logo" class="mobile-logo">
+        </a>
+      </div>
+      
+      <div class="mobile-nav-list">
+        <div class="mobile-nav-item" @click="navigateAndClose('/homepage')">
+          <span>Accueil</span>
+        </div>
+        <div class="mobile-nav-item" @click="navigateAndClose('/allbattlereports')">
+          <span>Mes Rapports de Batailles</span>
+        </div>
+        <div class="mobile-nav-item" @click="navigateAndClose('/createabattlereport')">
+          <span>Créer un Rapport de Bataille</span>
+        </div>
+        <div class="mobile-nav-item" @click="navigateAndClose('/myaccount')">
+          <span>Mon Compte</span>
+        </div>
+      </div>
     </div>
-  </v-app-bar>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, nextTick, watch } from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
+import { useRouter } from 'vue-router';
 
-const showSearch = ref(false);
-const searchQuery = ref("");
-const emit = defineEmits(['onSearch'])
-watch(searchQuery, function (){
-  emit('onSearch',searchQuery.value)
-})
-const searchContainer = ref<HTMLElement | null>(null);
-const searchInput = ref<HTMLElement | null>(null);
+const router = useRouter();
+const showMobileMenu = ref(false);
 
-const toggleSearch = async () => {
-  showSearch.value = !showSearch.value;
-  if (showSearch.value) {
-    await nextTick();
-    searchInput.value?.focus();
-  }
+const toggleMobileMenu = () => {
+  showMobileMenu.value = !showMobileMenu.value;
+  console.log('Menu mobile toggled:', showMobileMenu.value);
+  console.log('Menu element should be:', showMobileMenu.value ? 'visible' : 'hidden');
 };
 
-const keepSearchOpen = () => {
-  showSearch.value = true;
+const closeMobileMenu = () => {
+  showMobileMenu.value = false;
+};
+
+const navigateAndClose = (path: string) => {
+  router.push(path);
+  closeMobileMenu();
 };
 
 const handleClickOutside = (event: MouseEvent) => {
-  if (
-    searchContainer.value &&
-    !searchContainer.value.contains(event.target as Node)
-  ) {
-    showSearch.value = false;
+  const target = event.target as HTMLElement;
+  const mobileMenu = document.querySelector('.mobile-menu-external');
+  const hamburgerBtn = document.querySelector('.mobile-actions');
+  
+  // Ne fermer le menu que si on clique en dehors du menu ET du bouton hamburger
+  if (showMobileMenu.value && 
+      mobileMenu && 
+      hamburgerBtn && 
+      !mobileMenu.contains(target) && 
+      !hamburgerBtn.contains(target)) {
+    showMobileMenu.value = false;
   }
 };
 
@@ -80,6 +104,11 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+.navbar-container {
+  position: relative;
+  z-index: 1000;
+}
+
 .my-app-bar {
   margin-top: 16px;
   border-radius: 16px;
@@ -91,6 +120,8 @@ onUnmounted(() => {
   background-color: #332018 !important;
   color: white !important;
   opacity : 0.9 !important;
+  position: relative;
+  z-index: 1000;
 }
 
 .d-flex {
@@ -113,15 +144,112 @@ onUnmounted(() => {
   object-fit: contain;
 }
 
-.search-container {
-  display: flex;
-  align-items: center;
-  position: relative;
+.desktop-nav {
+  gap: 8px;
 }
 
-.search-bar {
-  width: 200px;
-  transition: width 0.3s ease-in-out;
+.desktop-actions {
+  gap: 8px;
+}
+
+.mobile-actions {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* NOUVEAUX STYLES POUR MENU EXTERNE */
+.mobile-menu-external {
+  position: fixed !important;
+  top: 80px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: 80% !important;
+  max-width: 80% !important;
+  background-color: #332018 !important;
+  border-radius: 0 0 16px 16px !important;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3) !important;
+  z-index: 9999 !important;
+  animation: slideDown 0.3s ease-out !important;
+}
+
+.mobile-logo-container {
+  padding: 20px;
+  text-align: center;
+  border-bottom: 1px solid rgba(184, 160, 130, 0.3);
+}
+
+.mobile-logo-link {
+  display: inline-block;
+  text-decoration: none;
+}
+
+.mobile-logo {
+  height: 40px;
+  width: auto;
+}
+
+.mobile-search-external {
+  position: fixed !important;
+  top: 80px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: 80% !important;
+  max-width: 80% !important;
+  background-color: #332018 !important;
+  border-radius: 0 0 16px 16px !important;
+  padding: 16px !important;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2) !important;
+  z-index: 9999 !important;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.mobile-nav-list {
+  background-color: transparent !important;
+  padding: 8px 0 !important;
+  display: block !important;
+}
+
+.mobile-nav-item {
+  color: #EBDEC2 !important;
+  min-height: 48px !important;
+  padding: 12px 24px !important;
+  cursor: pointer !important;
+  transition: background-color 0.2s ease !important;
+  border-bottom: 1px solid rgba(235, 222, 194, 0.1) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.mobile-nav-item:hover {
+  background-color: rgba(235, 222, 194, 0.2) !important;
+}
+
+.mobile-nav-item:last-child {
+  border-bottom: none !important;
+  border-radius: 0 0 16px 16px !important;
+}
+
+.mobile-nav-item span {
+  color: #EBDEC2 !important;
+  font-size: 1rem !important;
+  font-weight: 500 !important;
+  text-align: center !important;
 }
 
 .v-enter-active,
@@ -135,4 +263,55 @@ onUnmounted(() => {
   opacity: 0;
 }
 
+/* Responsive Design */
+@media (max-width: 1100px) {
+  .my-app-bar {
+    max-width: 95%;
+    margin-top: 8px;
+  }
+  
+  .mobile-menu-external {
+    top: 72px !important;
+    max-width: 95% !important;
+    width: 95% !important;
+  }
+  
+  .logo {
+    height: 60px;
+  }
+}
+
+@media (max-width: 600px) {
+  .my-app-bar {
+    max-width: 98%;
+    margin-top: 4px;
+    height: 60px;
+  }
+  
+  .mobile-menu-external {
+    top: 64px !important;
+    max-width: 98% !important;
+    width: 98% !important;
+  }
+  
+  .logo {
+    height: 50px;
+  }
+}
+
+@media (max-width: 480px) {
+  .my-app-bar {
+    border-radius: 12px;
+    height: 56px;
+  }
+  
+  .mobile-menu-external {
+    top: 60px !important;
+    border-radius: 0 0 12px 12px !important;
+  }
+  
+  .logo {
+    height: 45px;
+  }
+}
 </style>

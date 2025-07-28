@@ -3,13 +3,14 @@
 
     <Navbar @on-search="onSearch" />
     <RouterView />
+    <Footer />
   </v-app>
 </template>
 
 <script setup lang="ts">
 import { RouterView } from 'vue-router';
 import Navbar from '././components/Navbar.vue';
-import HomeView from './views/AllUnits.vue';
+import Footer from '././components/Footer.vue';
 import { ref } from 'vue';
 const searchQueryRef = ref("")
 function onSearch(searchQuery : string){
@@ -40,14 +41,12 @@ function onSearch(searchQuery : string){
 </style>
 
 <style>
-/* Retirer les flèches sur input type number dans Chrome, Edge, Safari */
 input[type=number]::-webkit-inner-spin-button,
 input[type=number]::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
 
-/* Retirer les flèches sur Firefox */
 input[type=number] {
   -moz-appearance: textfield;
 }

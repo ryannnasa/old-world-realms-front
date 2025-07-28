@@ -6,7 +6,7 @@
       show-arrows-on-hover
       cycle
       height="100vh"
-      class="rounded-0"
+      class="rounded-0 main-carousel"
     >
       <v-carousel-item
         v-for="(item, i) in siteNews"
@@ -27,7 +27,7 @@
 
     <!-- 2. Présentation du site -->
 <v-container class="py-16" style="min-height: 80vh;">
-  <v-row justify="space-between" align="center" style="flex-wrap: nowrap;">
+  <v-row justify="space-between" align="center" class="presentation-row">
     <v-col cols="12" md="6" class="text-center text-md-left" style="max-width: 42rem; margin-left: 0;">
       <h1 class="text-h3 font-weight-bold mb-8" style="max-width: none;">
         Bienvenue sur Old World Realms
@@ -112,9 +112,9 @@
                         </template>
                       </div>
 
-                      <v-card-title class="mt-2">{{ report.title }}</v-card-title>
+                      <v-card-title class="mt-2 battle-title">{{ report.title }}</v-card-title>
 
-                      <v-card-subtitle class="d-flex align-center justify-center flex-wrap text-center">
+                      <v-card-subtitle class="d-flex align-center justify-center flex-wrap text-center battle-subtitle">
                         <template v-for="(alliance, index) in groupedByAlliance(report.players)" :key="index">
                           <span class="mx-1 font-weight-medium">
                             {{ alliance.map(player => player.name).join(' / ') }}
@@ -129,7 +129,7 @@
                         </template>
                       </v-card-subtitle>
 
-                      <v-card-text>{{ report.points }} points</v-card-text>
+                      <v-card-text class="battle-points">{{ report.points }} points</v-card-text>
                     </router-link>
                   </v-card>
                 </div>
@@ -146,34 +146,19 @@
     <!-- 4. Actualités Warhammer Community -->
 <v-container 
   fluid
-  class="d-flex align-center justify-center"
-  style="
-    min-height: 90vh;
-    background-image: url('/img/Site/site2.jpg');
-    background-size: cover;
-    background-position: center;
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-    color: white;
-    text-align: center;
-  "
+  class="d-flex align-center justify-center news-section"
 >
-  <v-row justify="center" align="center" class="pa-8" style="background-color: rgba(0,0,0,0.55); border-radius: 12px; max-width: 900px;">
+  <v-row justify="center" align="center" class="pa-8 news-content">
     <v-col cols="12" md="8">
       <h2 class="text-h4 font-weight-bold mb-4">Actualités Warhammer: The Old World</h2>
-      <p class="mb-6" style="font-size: 1.1rem;">
+      <p class="mb-6 news-description">
         Suivez les dernières annonces officielles, mises à jour de règles, sorties de figurines et scénarios spéciaux proposés par Games Workshop.
       </p>
       <v-btn
         large
         href="https://www.warhammer-community.com/en-gb/setting/warhammer-the-old-world/"
         target="_blank"
-        style="
-          background-color: #332018;
-          color: #EBDEC2;
-          font-weight: 600;
-          transition: background-color 0.3s ease;
-        "
+        class="news-button"
         @mouseover="(e) => e.currentTarget.style.backgroundColor = '#4b2d21'"
         @mouseleave="(e) => e.currentTarget.style.backgroundColor = '#332018'"
       >
@@ -477,5 +462,206 @@ onMounted(() => {
 
 .v-icon {
   color: #332018;
+}
+
+/* Section présentation responsive */
+.presentation-text {
+  order: 2;
+}
+
+.presentation-image-col {
+  order: 1;
+  margin-bottom: 2rem;
+}
+
+.presentation-title {
+  font-size: 2.5rem;
+}
+
+.presentation-image {
+  background-image: url('/public/img/site/site1.jpg');
+  background-size: cover;
+  background-position: center;
+  height: 400px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  width: 100%;
+}
+
+/* Section actualités responsive */
+.news-section {
+  min-height: 90vh;
+  background-image: url('/img/Site/site2.jpg');
+  background-size: cover;
+  background-position: center;
+  border-radius: 12px 12px 0 0;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+  color: white;
+  text-align: center;
+}
+
+.news-content {
+  background-color: rgba(0,0,0,0.55);
+  border-radius: 12px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.news-description {
+  font-size: 1.1rem;
+}
+
+.news-button {
+  background-color: #332018;
+  color: #EBDEC2;
+  font-weight: 600;
+  transition: background-color 0.3s ease;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .presentation-image {
+    height: 350px;
+  }
+  
+  .carousel-item {
+    flex: 0 0 calc(100% / 2);
+  }
+}
+
+@media (max-width: 960px) {
+  .presentation-text {
+    order: 1;
+    margin-bottom: 2rem;
+  }
+  
+  .presentation-image-col {
+    order: 2;
+    margin-bottom: 0;
+  }
+  
+  .presentation-title {
+    font-size: 2rem;
+  }
+  
+  .presentation-image {
+    height: 300px;
+  }
+  
+  .news-content {
+    margin: 1rem;
+    padding: 2rem 1rem;
+  }
+  
+  .news-description {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Réduction de la hauteur du carrousel principal sur mobile */
+  .main-carousel {
+    height: 50vh !important;
+  }
+  
+  .carousel-item {
+    flex: 0 0 100%;
+    padding: 4px;
+  }
+  
+  .battle-images-container {
+    height: 150px;
+  }
+  
+  .battle-title {
+    font-size: 1rem;
+  }
+  
+  .battle-subtitle {
+    font-size: 0.85rem;
+  }
+  
+  .battle-points {
+    font-size: 0.9rem;
+  }
+  
+  .presentation-image {
+    height: 250px;
+  }
+  
+  .news-section {
+    min-height: 70vh;
+  }
+  
+  .news-content {
+    padding: 1.5rem 0.5rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .presentation-title {
+    font-size: 1.75rem;
+  }
+  
+  .presentation-image {
+    height: 200px;
+  }
+  
+  .carousel-container {
+    max-width: 100%;
+  }
+  
+  .news-section {
+    min-height: 60vh;
+    border-radius: 8px 8px 0 0;
+  }
+  
+  .news-content {
+    border-radius: 8px;
+  }
+  
+  .news-button {
+    width: 100%;
+    max-width: 300px;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Carrousel encore plus petit sur très petits écrans */
+  .main-carousel {
+    height: 45vh !important;
+  }
+  
+  .presentation-title {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .text-body-1 {
+    font-size: 0.95rem;
+  }
+  
+  .battle-images-container {
+    height: 120px;
+  }
+  
+  .battle-title {
+    font-size: 0.9rem;
+    padding: 8px 12px;
+  }
+  
+  .battle-subtitle {
+    font-size: 0.8rem;
+    padding: 4px 12px;
+  }
+  
+  .battle-points {
+    font-size: 0.85rem;
+    padding: 4px 12px 12px;
+  }
+  
+  .presentation-image {
+    height: 180px;
+  }
 }
 </style>

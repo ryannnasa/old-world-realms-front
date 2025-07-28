@@ -10,8 +10,14 @@
       </div>
 
       <v-card class="mb-4 card-container">
-        <v-card-title>Filtres</v-card-title>
-        <v-card-text>
+        <v-card-title class="filter-title" @click="toggleFilters">
+          Filtres
+          <v-spacer></v-spacer>
+          <v-btn icon class="filter-toggle-btn" @click.stop="toggleFilters">
+            <v-icon>{{ showFilters ? 'mdi-minus' : 'mdi-plus' }}</v-icon>
+          </v-btn>
+        </v-card-title>
+        <v-card-text v-show="showFilters || !isMobile" class="filter-content">
           <v-row>
             <v-col cols="12" md="3">
               <v-select v-model="selectedFaction" :items="factions" label="Armée jouée" outlined></v-select>
@@ -25,11 +31,11 @@
             <v-col cols="12" md="3">
               <v-text-field v-model.number="selectedPoints" label="Points" type="number" outlined clearable></v-text-field>
               <div class="chip-container">
-                <v-chip @click="selectedPoints=500">500</v-chip>
-                <v-chip @click="selectedPoints=1000">1000</v-chip>
-                <v-chip @click="selectedPoints=1500">1500</v-chip>
-                <v-chip @click="selectedPoints=2000">2000</v-chip>
-                <v-chip @click="selectedPoints=3000">3000</v-chip>
+                <v-chip class="points-chip" @click="selectedPoints=500">500</v-chip>
+                <v-chip class="points-chip" @click="selectedPoints=1000">1000</v-chip>
+                <v-chip class="points-chip" @click="selectedPoints=1500">1500</v-chip>
+                <v-chip class="points-chip" @click="selectedPoints=2000">2000</v-chip>
+                <v-chip class="points-chip d-none d-lg-inline-flex" @click="selectedPoints=3000">3000</v-chip>
               </div>
             </v-col>
           </v-row>
@@ -133,7 +139,7 @@
 
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useBattleReportStore } from '@/stores/battleReport';
 import { useArmyPhotoStore } from '@/stores/armyPhoto';
@@ -163,6 +169,28 @@ const selectedScenario = ref('');
 const selectedPoints = ref(null);
 const NoAlliance = 4;
 const authStore = useAuthStore();
+
+// Variables pour la gestion responsive des filtres
+const showFilters = ref(false);
+const isMobile = ref(false);
+
+// Fonction pour détecter la taille d'écran
+const checkScreenSize = () => {
+  isMobile.value = window.innerWidth < 960; // md breakpoint de Vuetify
+  if (!isMobile.value) {
+    showFilters.value = true; // Toujours afficher sur desktop
+  } else {
+    showFilters.value = false; // Cacher par défaut sur mobile
+  }
+};
+
+// Fonction pour toggle les filtres sur mobile
+const toggleFilters = () => {
+  if (isMobile.value) {
+    showFilters.value = !showFilters.value;
+    console.log('Toggle filters:', showFilters.value, 'isMobile:', isMobile.value);
+  }
+};
 
 function resetFilters() {
   selectedFaction.value = '';
@@ -315,6 +343,10 @@ function fetchReports() {
 const loading = ref(true);
 
 onMounted(() => {
+  // Initialiser la détection de taille d'écran
+  checkScreenSize();
+  window.addEventListener('resize', checkScreenSize);
+  
   Promise.all([
     armyPhotoStore.getArmyPhoto(),
     armyNameStore.getArmyName(),
@@ -344,6 +376,10 @@ if (battleReportStore.battleReportSuccess) {
 }
 
     });
+});
+
+onUnmounted(() => {
+  window.removeEventListener('resize', checkScreenSize);
 });
 
 function closeSnackbar() {
@@ -384,14 +420,184 @@ function deleteReport(id) {
 
 .page-container {
   margin-top: 80px;
-  background-color: #211510;
-  min-height: 100vh;
+  background-color: rgba(33, 21, 16, 0.9);
+  min-height: calc(100vh - 80px);
+  padding: 20px;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .page-container {
+    margin-top: 90px;
+    min-height: calc(100vh - 90px);
+    padding: 15px;
+  }
+}
+
+@media (max-width: 960px) {
+  .page-container {
+    margin-top: 100px;
+    min-height: calc(100vh - 100px);
+    padding: 15px;
+  }
+  
+  .background {
+    padding: 15px;
+  }
+}
+
+@media (max-width: 768px) {
+  .page-container {
+    margin-top: 110px;
+    min-height: calc(100vh - 110px);
+    padding: 10px;
+  }
+  
+  .background {
+    padding: 10px;
+  }
+  
+  .button-container {
+    margin-bottom: 15px;
+  }
+}
+
+@media (max-width: 600px) {
+  .page-container {
+    margin-top: 120px;
+    min-height: calc(100vh - 120px);
+    padding: 8px;
+  }
+  
+  .background {
+    padding: 8px;
+  }
+  
+  .chip-container {
+    flex-wrap: nowrap;
+    gap: 2px;
+    justify-content: flex-start;
+  }
+  
+  .points-chip {
+    font-size: 10px !important;
+    height: 24px !important;
+    min-width: 42px !important;
+    max-width: 42px !important;
+    flex: none !important;
+    padding: 0 2px !important;
+    border-radius: 12px !important;
+  }
+  
+  .points-chip .v-chip__content {
+    font-size: 10px !important;
+    line-height: 24px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-container {
+    margin-top: 130px;
+    min-height: calc(100vh - 130px);
+    padding: 5px;
+  }
+  
+  .background {
+    padding: 5px;
+  }
+  
+  .battle-images-container {
+    height: 150px;
+  }
+  
+  .v-card-title {
+    font-size: 1.1rem !important;
+    padding: 12px !important;
+  }
+  
+  .v-card-subtitle {
+    font-size: 0.9rem !important;
+    padding: 8px 12px !important;
+  }
+  
+  .v-card-text {
+    padding: 8px 12px !important;
+  }
+  
+  .chip-container {
+    gap: 1px !important;
+    justify-content: flex-start !important;
+  }
+  
+  .points-chip {
+    font-size: 8px !important;
+    height: 20px !important;
+    min-width: 36px !important;
+    max-width: 36px !important;
+    flex: none !important;
+    padding: 0 1px !important;
+    border-radius: 10px !important;
+  }
+  
+  .points-chip .v-chip__content {
+    font-size: 8px !important;
+    line-height: 20px !important;
+    padding: 0 !important;
+  }
 }
 
 .card-container {
   border-radius: 15px;
   background-color: #332018;
   color: #EBDEC2;
+}
+
+.filter-title {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 16px 20px !important;
+}
+
+.filter-toggle-btn {
+  display: none;
+}
+
+.filter-content {
+  transition: all 0.3s ease-in-out;
+}
+
+@media (max-width: 960px) {
+  .filter-title {
+    user-select: none;
+  }
+  
+  .filter-toggle-btn {
+    display: inline-flex !important;
+  }
+  
+  .filter-content {
+    overflow: hidden;
+  }
+  
+  /* Styles spéciaux pour les chips sur mobile - mais seulement au-dessus de 600px */
+  @media (min-width: 601px) {
+    .points-chip {
+      border-radius: 16px !important;
+      font-weight: 500 !important;
+      line-height: 1 !important;
+      letter-spacing: 0.5px !important;
+    }
+    
+    .points-chip .v-chip__content {
+      padding: 0 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      width: 100% !important;
+      height: 100% !important;
+    }
+  }
 }
 
 .button {
@@ -515,7 +721,160 @@ function deleteReport(id) {
 
 .chip-container {
   display: flex;
-  justify-content: space-evenly;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 8px;
+}
 
+/* Styles par défaut pour les chips de points - écrans larges uniquement */
+@media (min-width: 960px) {
+  .points-chip {
+    flex: 1;
+    min-width: 90px;
+    font-size: 20px !important;
+    height: 44px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    padding: 0 14px !important;
+  }
+}
+
+/* Styles de base pour les chips (toutes tailles) */
+.points-chip {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+}
+
+/* Responsive pour les chips de points */
+@media (min-width: 1351px) {
+  .points-chip {
+    flex: none !important;
+    min-width: 48px !important;
+    max-width: 53px !important;
+    font-size: 12px !important;
+    height: 28px !important;
+    padding: 0 4px !important;
+  }
+  
+  .chip-container {
+    gap: 3px;
+    justify-content: flex-start;
+  }
+}
+
+/* Responsive pour les chips de points */
+@media (max-width: 1350px) {
+  .points-chip {
+    font-size: 12px !important;
+    height: 28px !important;
+    min-width: 45px !important;
+    max-width: 50px !important;
+    flex: none !important;
+    padding: 0 4px !important;
+  }
+  
+  .chip-container {
+    gap: 3px;
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 1200px) {
+  .points-chip {
+    font-size: 10px !important;
+    height: 24px !important;
+    min-width: 38px !important;
+    max-width: 43px !important;
+    flex: none !important;
+    padding: 0 3px !important;
+  }
+  
+  .chip-container {
+    gap: 2px;
+    justify-content: flex-start;
+  }
+}
+
+@media (min-width: 1200px) and (max-width: 1280px) {
+  .points-chip {
+    font-size: 10px !important;
+    height: 24px !important;
+    min-width: 36px !important;
+    max-width: 40px !important;
+    flex: none !important;
+    padding: 0 2px !important;
+  }
+  
+  .chip-container {
+    gap: 1px;
+    justify-content: flex-start;
+  }
+}
+
+@media (min-width: 960px) and (max-width: 1199px) {
+  .points-chip {
+    font-size: 10px !important;
+    height: 24px !important;
+    min-width: 37px !important;
+    max-width: 42px !important;
+    flex: none !important;
+    padding: 0 3px !important;
+  }
+  
+  .chip-container {
+    gap: 2px;
+    justify-content: flex-start;
+  }
+}
+
+/* Styles spécifiques pour mobile - 959px et moins */
+@media (max-width: 959px) {
+  .points-chip {
+    font-size: 16px !important;
+    height: 36px !important;
+    min-width: 80px !important;
+    max-width: 80px !important;
+    flex: none !important;
+    padding: 0 8px !important;
+    border-radius: 18px !important;
+  }
+  
+  .points-chip .v-chip__content {
+    font-size: 16px !important;
+    line-height: 36px !important;
+  }
+  
+  .chip-container {
+    gap: 8px;
+    justify-content: flex-start;
+  }
+}
+
+/* Styles spécifiques pour très petits écrans - 480px et moins - PRIORITÉ MAXIMALE */
+@media (max-width: 480px) {
+  .chip-container {
+    gap: 3px !important;
+    justify-content: flex-start !important;
+  }
+  
+  .points-chip {
+    font-size: 12px !important;
+    height: 28px !important;
+    min-width: 45px !important;
+    max-width: 45px !important;
+    flex: none !important;
+    padding: 0 3px !important;
+    border-radius: 14px !important;
+  }
+  
+  .points-chip .v-chip__content {
+    font-size: 12px !important;
+    line-height: 28px !important;
+    padding: 0 !important;
+  }
 }
 </style>

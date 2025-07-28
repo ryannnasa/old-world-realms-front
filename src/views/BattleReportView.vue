@@ -221,6 +221,68 @@ onMounted(() => {
   margin-top: 80px;
   background-color: #211510;
   min-height: 100vh;
+  padding: 20px;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .page-container {
+    margin-top: 90px;
+    min-height: calc(100vh - 90px);
+    padding: 15px;
+  }
+  
+  .background {
+    padding: 15px;
+  }
+}
+
+@media (max-width: 959px) {
+  .page-container {
+    margin-top: 100px;
+    min-height: calc(100vh - 100px);
+    padding: 15px;
+  }
+  
+  .background {
+    padding: 15px;
+  }
+}
+
+@media (max-width: 768px) {
+  .page-container {
+    margin-top: 110px;
+    min-height: calc(100vh - 110px);
+    padding: 10px;
+  }
+  
+  .background {
+    padding: 10px;
+  }
+}
+
+@media (max-width: 600px) {
+  .page-container {
+    margin-top: 120px;
+    min-height: calc(100vh - 120px);
+    padding: 8px;
+  }
+  
+  .background {
+    padding: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-container {
+    margin-top: 130px;
+    min-height: calc(100vh - 130px);
+    padding: 5px;
+  }
+  
+  .background {
+    padding: 5px;
+  }
 }
 
 .title-wrapper {
@@ -240,12 +302,68 @@ onMounted(() => {
   border-radius: 10px;
 }
 
+/* Responsive pour les cartes */
+@media (max-width: 768px) {
+  .title-container,
+  .card-container,
+  .description-card,
+  .photos-card {
+    border-radius: 8px;
+    padding: 8px;
+  }
+  
+  .title-container .v-card-title {
+    font-size: 1.3rem !important;
+  }
+  
+  .card-container .v-card-title,
+  .description-card .v-card-title,
+  .photos-card .v-card-title {
+    font-size: 1.2rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .title-container,
+  .card-container,
+  .description-card,
+  .photos-card {
+    border-radius: 6px;
+    padding: 6px;
+  }
+  
+  .title-container .v-card-title {
+    font-size: 1.2rem !important;
+  }
+  
+  .card-container .v-card-title,
+  .description-card .v-card-title,
+  .photos-card .v-card-title {
+    font-size: 1.1rem !important;
+  }
+}
+
 .battle-overview {
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 20px;
   gap: 20px;
+}
+
+/* Responsive pour l'aperçu de bataille */
+@media (max-width: 768px) {
+  .battle-overview {
+    gap: 15px;
+    margin-bottom: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .battle-overview {
+    gap: 10px;
+    margin-bottom: 10px;
+  }
 }
 
 .alliance-name {
@@ -261,6 +379,21 @@ onMounted(() => {
   border-radius: 10px;
   text-align: center;
   transition: background-color 0.3s ease;
+}
+
+/* Responsive pour les cartes d'armée */
+@media (max-width: 768px) {
+  .army-card {
+    padding: 8px;
+    border-radius: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .army-card {
+    padding: 6px;
+    border-radius: 6px;
+  }
 }
 
 .army-card.winner {
@@ -281,6 +414,45 @@ onMounted(() => {
   margin: 0 auto 10px;
 }
 
+/* Responsive pour les images de bataille */
+@media (max-width: 1200px) {
+  .battle-image {
+    max-width: 350px;
+    height: 280px;
+  }
+}
+
+@media (max-width: 959px) {
+  .battle-image {
+    max-width: 300px;
+    height: 250px;
+  }
+}
+
+@media (max-width: 768px) {
+  .battle-image {
+    max-width: 250px;
+    height: 200px;
+    border-radius: 8px;
+  }
+}
+
+@media (max-width: 600px) {
+  .battle-image {
+    max-width: 200px;
+    height: 160px;
+  }
+}
+
+@media (max-width: 480px) {
+  .battle-image {
+    max-width: 180px;
+    height: 140px;
+    border-radius: 6px;
+    margin: 0 auto 8px;
+  }
+}
+
 .army-name {
   font-size: 18px;
   font-weight: bold;
@@ -290,6 +462,35 @@ onMounted(() => {
   font-size: 14px;
 }
 
+/* Responsive pour les textes des armées */
+@media (max-width: 768px) {
+  .army-name {
+    font-size: 16px;
+  }
+  
+  .army-composition {
+    font-size: 13px;
+  }
+  
+  .alliance-name {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .army-name {
+    font-size: 14px;
+  }
+  
+  .army-composition {
+    font-size: 12px;
+  }
+  
+  .alliance-name {
+    font-size: 12px;
+  }
+}
+
 .score {
   font-size: 20px;
   font-weight: bold;
@@ -297,5 +498,41 @@ onMounted(() => {
   border-radius: 10px;
   margin-top: 10px;
   background-color: #5e493e;
+}
+
+/* Responsive pour les scores */
+@media (max-width: 768px) {
+  .score {
+    font-size: 18px;
+    padding: 8px;
+    border-radius: 8px;
+    margin-top: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .score {
+    font-size: 16px;
+    padding: 6px;
+    border-radius: 6px;
+    margin-top: 6px;
+  }
+}
+
+/* Responsive pour le carrousel de photos */
+@media (max-width: 768px) {
+  .photos-card .v-carousel {
+    border-radius: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .photos-card .v-carousel {
+    border-radius: 6px;
+  }
+  
+  .photos-card .v-carousel-item img {
+    border-radius: 6px;
+  }
 }
 </style>
