@@ -192,6 +192,7 @@ import { useArmyPhotoStore } from '@/stores/armyPhoto';
 import { useArmyNameStore } from '@/stores/armyName';
 import { useAllianceStore } from '@/stores/alliance';
 import { useScenarioStore } from '@/stores/scenario';
+import { useAuthStore } from '@/stores/auth';
 import _ from 'lodash';
 
 const battleReportStore = useBattleReportStore();
@@ -199,6 +200,7 @@ const armyPhotoStore = useArmyPhotoStore();
 const armyNameStore = useArmyNameStore();
 const allianceStore = useAllianceStore();
 const scenarioStore = useScenarioStore();
+const authStore = useAuthStore();
 
 const reports = ref([]);
 const NoAlliance = 4;
@@ -208,11 +210,7 @@ const currentPage = ref(0);
 reports.value = [];
 
 const chunkedReports = computed(() => {
-  const chunks = [];
-  for (let i = 0; i < reports.value.length; i += 3) {
-    chunks.push(reports.value.slice(i, i + 3));
-  }
-  return chunks;
+  return _.chunk(reports.value, 3);
 });
 
 const totalPages = computed(() => Math.ceil(reports.value.length / reportsPerPage));
@@ -231,6 +229,7 @@ function nextPage() {
 }
 
 function groupedByAlliance(players) {
+  if (!Array.isArray(players)) return [];
   const groupedObj = _.groupBy(players, player => {
     if (!player.allianceId || player.allianceId === NoAlliance) {
       return `no-alliance-${player.name}`;
@@ -238,24 +237,15 @@ function groupedByAlliance(players) {
     return player.allianceId;
   });
 
-  const groups = Object.values(groupedObj);
   const firstPlayer = players[0];
   const firstGroupKey = (!firstPlayer.allianceId || firstPlayer.allianceId === NoAlliance)
     ? `no-alliance-${firstPlayer.name}`
     : firstPlayer.allianceId;
-
-  const sortedGroups = [];
-
-  if (groupedObj[firstGroupKey]) {
-    sortedGroups.push(groupedObj[firstGroupKey]);
-    delete groupedObj[firstGroupKey];
-  }
-  for (const group of Object.values(groupedObj)) {
-    sortedGroups.push(group);
-  }
-
-  return sortedGroups;
+  const firstGroup = groupedObj[firstGroupKey] ?? [];
+  const otherGroups = _.omit(groupedObj, firstGroupKey);
+  return [firstGroup, ...Object.values(otherGroups)];
 }
+
 
 function getArmyImageUrl(armyId) {
   const photo = armyPhotoStore.armyPhoto.find(p => p.armyName_idArmyName === armyId);
@@ -278,27 +268,36 @@ function getScenarioName(scenarioId) {
 }
 
 function fetchReports() {
-  return battleReportStore.getBattleReport().then(() => {
-    reports.value = battleReportStore.battleReports.map(report => {
-      const players = report.players?.map(p => ({
-        name: p.playerName,
-        allianceId: p.alliance_idAlliance,
-        alliance: getAllianceName(p.alliance_idAlliance),
-        army: getArmyName(p.armyName_idArmyName),
-        armyImage: getArmyImageUrl(p.armyName_idArmyName),
-        score: p.playerScore
-      })) ?? [];
+  return armyPhotoStore.getArmyPhoto()
+    .then(() => armyNameStore.getArmyName())
+    .then(() => allianceStore.getAlliance())
+    .then(() => battleReportStore.fetchBattleReportByUserId(authStore.profile.id))
+    .then(() => {
+      reports.value = battleReportStore.battleReports.map(report => {
+        const players = report.players?.map(p => ({
+          name: p.playerName,
+          allianceId: p.alliance_idAlliance,
+          alliance: getAllianceName(p.alliance_idAlliance),
+          army: getArmyName(p.armyName_idArmyName),
+          armyImage: getArmyImageUrl(p.armyName_idArmyName),
+          score: p.playerScore
+        })) ?? [];
 
-      return {
-        id: report.idBattleReport,
-        title: report.nameBattleReport,
-        description: report.descriptionBattleReport,
-        scenario: getScenarioName(report.scenario_idScenario),
-        points: Number(report.armyPoints),
-        players
-      };
+        return {
+          id: report.idBattleReport,
+          title: report.nameBattleReport,
+          description: report.descriptionBattleReport,
+          scenario: getScenarioName(report.scenario_idScenario),
+          points: Number(report.armyPoints),
+          faction: players[0]?.army || '',
+          opponent: players[1]?.army || '',
+          players
+        };
+      });
+    })
+    .catch(err => {
+      console.error('Erreur lors de la récupération des rapports de bataille :', err);
     });
-  });
 }
 
 const articles = [

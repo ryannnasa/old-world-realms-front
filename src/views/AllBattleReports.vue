@@ -134,13 +134,13 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';  // import router
+import { useRouter } from 'vue-router';
 import { useBattleReportStore } from '@/stores/battleReport';
 import { useArmyPhotoStore } from '@/stores/armyPhoto';
 import { useArmyNameStore } from '@/stores/armyName';
 import { useAllianceStore } from '@/stores/alliance';
 import { useScenarioStore } from '@/stores/scenario';
-import { useProfileStore } from '@/stores/profile';
+import { useAuthStore } from '@/stores/auth';
 import _ from 'lodash';
 
 const router = useRouter();
@@ -162,7 +162,7 @@ const selectedOpponent = ref('');
 const selectedScenario = ref('');
 const selectedPoints = ref(null);
 const NoAlliance = 4;
-const profileStore = useProfileStore();
+const authStore = useAuthStore();
 
 function resetFilters() {
   selectedFaction.value = '';
@@ -283,7 +283,7 @@ function fetchReports() {
   return armyPhotoStore.getArmyPhoto()
     .then(() => armyNameStore.getArmyName())
     .then(() => allianceStore.getAlliance())
-    .then(() => battleReportStore.fetchBattleReportByUserId(profileStore.profile.id))
+    .then(() => battleReportStore.fetchBattleReportByUserId(authStore.profile.id))
     .then(() => {
       reports.value = battleReportStore.battleReports.map(report => {
         const players = report.players?.map(p => ({
@@ -324,7 +324,6 @@ onMounted(() => {
     .then(() => fetchReports())
     .finally(() => {
       loading.value = false;
-      battleReportStore.checkBattleReportSuccess();
       battleReportStore.checkBattleReportSuccess();
 if (battleReportStore.battleReportSuccess) {
   switch (battleReportStore.battleReportAction) {
@@ -371,7 +370,6 @@ function deleteReport(id) {
     });
 }
 </script>
-
 
 <style scoped>
 .background {
@@ -422,16 +420,6 @@ function deleteReport(id) {
 
 .battle-card:hover .action-buttons {
   display: flex;
-}
-
-.battle-images-container {
-  position: relative;
-  width: 100%;
-  height: 180px;
-  display: flex;
-  justify-content: space-between;
-  overflow: hidden;
-  border-radius: 10px 10px 0 0;
 }
 
 .battle-image {

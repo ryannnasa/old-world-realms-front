@@ -45,13 +45,13 @@
       <v-card class="mb-4 card-container photos-card">
         <v-card-title>Photos</v-card-title>
         <v-card-text>
-          <v-carousel>
-            <v-carousel-item
-              v-for="(photo, index) in battlePhotos"
-              :key="index"
-              :src="photo"
-            />
-          </v-carousel>
+          <v-carousel v-model="carouselIndex">
+  <v-carousel-item
+    v-for="(photo, index) in battlePhotos"
+    :key="index"
+    :src="photo"
+  />
+</v-carousel>
         </v-card-text>
       </v-card>
     </v-container>
@@ -75,24 +75,58 @@ const allianceStore = useAllianceStore();
 const battleReport = ref(null);
 const players = ref([]);
 const battlePhotos = ref([]);
+const carouselIndex = ref(0);
 
-// Nom lisible de l'armée depuis l'id
+// Fonction pour récupérer le nom lisible de l'armée depuis l'ID
 function getArmyName(armyId) {
   const army = armyNameStore.armyName.find(a => a.idArmyName === armyId);
   return army ? army.nameArmyName : 'Inconnu';
 }
 
-// Image d'armée depuis l'id
+// Fonction pour récupérer l'URL de l'image de l'armée depuis l'ID
 function getArmyImageUrl(armyId) {
   const photo = armyPhotoStore.armyPhoto.find(p => p.armyName_idArmyName === armyId);
   return photo ? `/img/armees/${photo.photoArmyName}` : '/img/armees/default.jpg';
 }
 
-// Nom de l'alliance depuis l'id
+// Fonction pour récupérer le nom de l'alliance depuis l'ID
 function getAllianceName(allianceId) {
   const alliance = allianceStore.alliance.find(a => a.idAlliance === allianceId);
   return alliance ? alliance.allianceName : 'Inconnue';
 }
+
+// Fonction pour construire l'URL publique Scaleway d'une photo
+function getPhotoUrl(filename) {
+  return fetch(`http://localhost:8080/image-url/${filename}`)
+    .then(response => {
+      if (!response.ok) throw new Error('Erreur lors de la récupération du lien signé');
+      return response.text();
+    })
+    .catch(err => {
+      console.error('Erreur pour getPhotoUrl:', err);
+      return '/img/erreur.jpg'; // image fallback si erreur
+    });
+}
+
+function fetchBattlePhotos(idBattleReport) {
+  return fetch(`http://localhost:8080/battlereport/${idBattleReport}/photos`)
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Erreur réseau');
+      }
+      return response.json();
+    })
+    .then(data => {
+      return Promise.all(data.map(photo => getPhotoUrl(photo.nameBattleReportPhoto)));
+    })
+    .then(urls => {
+      battlePhotos.value = urls;
+    })
+    .catch(error => {
+      console.error('Erreur lors de la récupération des photos :', error);
+    });
+}
+
 
 onMounted(() => {
   Promise.all([
@@ -100,12 +134,19 @@ onMounted(() => {
     armyNameStore.getArmyName(),
     allianceStore.getAlliance(),
     battleReportStore.getBattleReport()
-  ]).then(() => {
-    const id = parseInt(route.params.id);
-    battleReport.value = battleReportStore.battleReports.find(b => b.idBattleReport === id);
+  ])
+    .then(() => {
+      const id = parseInt(route.params.id);
+      battleReport.value = battleReportStore.battleReports.find(b => b.idBattleReport === id);
 
-    if (battleReport.value) {
+      if (!battleReport.value) return;
+
       players.value = battleReport.value.players ?? [];
+
+      // Appel des photos dynamiques
+      return fetchBattlePhotos(battleReport.value.idBattleReport);
+    })
+    .then(() => {
       const allianceScores = {};
       const soloPlayers = [];
 
@@ -157,18 +198,13 @@ onMounted(() => {
           isWinner: winningAllianceIds.includes(p.alliance_idAlliance) && p.alliance_idAlliance !== 4
         }));
       }
-
-      battlePhotos.value = [
-        '/img/Bretonniens/BREChevaliersDuGraal01.jpg',
-        '/img/Bretonniens/BREChevaliersDuGraal02.jpg',
-      ];
-    }
-  }).catch(err => {
-    console.error('Erreur dans onMounted:', err);
-  });
+    })
+    .catch(err => {
+      console.error('Erreur dans onMounted:', err);
+    });
 });
-
 </script>
+
 
 <style scoped>
 .background {

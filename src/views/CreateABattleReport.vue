@@ -48,24 +48,32 @@
   <v-card-title>Photos de la bataille</v-card-title>
   <v-card-text>
     <div class="photo-grid">
-      <!-- Miniatures existantes -->
+      <!-- Photos existantes -->
       <div
-        v-for="(photo, index) in photoPreviews"
-        :key="index"
+        v-for="(name, idx) in existingPhotoFileNames"
+        :key="'existing-' + name"
         class="photo-thumbnail"
       >
-        <v-img :src="photo" aspect-ratio="1" cover />
-        <v-btn icon class="remove-btn" @click="removePhoto(index)">
+        <v-img :src="photoPreviews[idx]" aspect-ratio="1" cover />
+        <v-btn icon class="remove-btn" @click="removePhoto(name, true)">
           <v-icon color="white">mdi-close</v-icon>
         </v-btn>
       </div>
-
-      <!-- Case pour ajouter une nouvelle photo -->
-      <div v-if="photos.length < 10" class="photo-add" @click="triggerFileInput">
+      <!-- Nouvelles photos -->
+      <div
+        v-for="(photo, idx) in fileBattleReportPhoto"
+        :key="'new-' + photo.name"
+        class="photo-thumbnail"
+      >
+        <v-img :src="photoPreviews[existingPhotoFileNames.length + idx]" aspect-ratio="1" cover />
+        <v-btn icon class="remove-btn" @click="removePhoto(photo.name, false)">
+          <v-icon color="white">mdi-close</v-icon>
+        </v-btn>
+      </div>
+      <!-- Ajout -->
+      <div v-if="existingPhotoFileNames.length + fileBattleReportPhoto.length < 10" class="photo-add" @click="triggerFileInput">
         <v-icon size="36">mdi-plus</v-icon>
       </div>
-
-      <!-- Input caché pour déclencher le sélecteur -->
       <input
         ref="fileInput"
         type="file"
@@ -192,101 +200,101 @@ import { useScenarioStore } from '@/stores/scenario';
 import { useAllianceStore } from '@/stores/alliance';
 import { useArmyStore } from '@/stores/army';
 import { useArmyPhotoStore } from '@/stores/armyPhoto';
-import { usePlayerStore } from '@/stores/player';
 import { useBattleReportStore } from '@/stores/battleReport';
-import { useProfileStore } from '@/stores/profile';
+import { useAuthStore } from '@/stores/auth';
+import _ from 'lodash';
 
-// Router
 const route = useRoute();
 const router = useRouter();
 const reportId = route.params.id || null;
 
-// Stores
 const armyCompositionStore = useArmyCompositionStore();
 const armyNameStore = useArmyNameStore();
 const scenarioStore = useScenarioStore();
 const allianceStore = useAllianceStore();
 const armyStore = useArmyStore();
 const armyPhotoStore = useArmyPhotoStore();
-const playerStore = usePlayerStore();
 const battleReportStore = useBattleReportStore();
-const profileStore = useProfileStore();
+const authStore = useAuthStore();
 
-// Data
 const battleTitle = ref('');
 const description = ref('');
 const scenario = ref('');
 const armyPoints = ref(0);
-
 const scenarios = computed(() => scenarioStore.scenario || []);
 const armiesName = computed(() => armyNameStore.armyName || []);
 const armiesComposition = computed(() => armyCompositionStore.armyComposition || []);
 const alliances = computed(() => allianceStore.alliance || []);
 const armyPhotos = computed(() => armyPhotoStore.armyPhoto || []);
-const photos = ref([]);
 const photoPreviews = ref([]);
 const fileInput = ref(null);
 const fileBattleReportPhoto = ref([]);
+const existingPhotoFileNames = ref([]);
 
+// Gestion des fichiers photos
 const triggerFileInput = () => {
-  if (photos.value.length < 10) fileInput.value.click();
+  const maxPhotos = 10;
+  const currentCount = existingPhotoFileNames.value.length + fileBattleReportPhoto.value.length;
+  if (currentCount < maxPhotos) fileInput.value.click();
 };
 
 const handleFileChange = (event) => {
   const selectedFiles = Array.from(event.target.files);
-  const availableSlots = 10 - photos.value.length;
-
+  const maxPhotos = 10;
+  const availableSlots = maxPhotos - (existingPhotoFileNames.value.length + fileBattleReportPhoto.value.length);
+  
   selectedFiles.slice(0, availableSlots).forEach((file) => {
-    photos.value.push(file);
+    const photo = {
+      name: file.name,
+      fileBattleReportPhoto: file
+    };
+    
+    fileBattleReportPhoto.value.push(photo);
+    
+    // Ajout de la preview locale
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = function(e) {
       photoPreviews.value.push(e.target.result);
     };
     reader.readAsDataURL(file);
   });
-
-  // Reset l'input pour pouvoir recharger les mêmes fichiers
+  
   event.target.value = '';
 };
 
-const removePhoto = (index) => {
-  photos.value.splice(index, 1);
-  photoPreviews.value.splice(index, 1);
+// Suppression d'une photo
+const removePhoto = (name, isExisting) => {
+  if (isExisting) {
+    battleReportStore.deletePhotos(reportId, [name])
+      .then(() => {
+        const idx = existingPhotoFileNames.value.indexOf(name);
+        if (idx !== -1) {
+          existingPhotoFileNames.value.splice(idx, 1);
+          photoPreviews.value.splice(idx, 1);
+        }
+      })
+      .catch(err => {
+        console.error(err);
+      });
+  } else {
+    const idx = fileBattleReportPhoto.value.findIndex(p => p.name === name);
+    if (idx !== -1) {
+      fileBattleReportPhoto.value.splice(idx, 1);
+      photoPreviews.value.splice(existingPhotoFileNames.value.length + idx, 1);
+    }
+  }
 };
 
-// Initialisation des joueurs avec le pseudonyme pour le Joueur 1
+// Gestion des joueurs
 const players = ref([
-  {
-    id: 0,
-    name: profileStore.profile.username || '',
-    alliance: '',
-    army: '',
-    armyComposition: '',
-    score: 0
-  },
-  {
-    id: 1,
-    name: '',
-    alliance: '',
-    army: '',
-    armyComposition: '',
-    score: 0
-  }
+  { id: 0, name: authStore.profile?.username || '', alliance: '', army: '', armyComposition: '', score: 0 },
+  { id: 1, name: '', alliance: '', army: '', armyComposition: '', score: 0 }
 ]);
-
-
 let nextPlayerId = 2;
 
 const addPlayer = () => {
   if (players.value.length < 10) {
-    players.value.push({
-      id: nextPlayerId++,
-      name: '',
-      alliance: '',
-      army: '',
-      armyComposition: '',
-      score: 0
-    });
+    players.value.push({ id: nextPlayerId++, name: '', alliance: '', army: '', armyComposition: '', score: 0 });
   }
 };
 
@@ -294,23 +302,17 @@ const removePlayer = (idToRemove) => {
   players.value = players.value.filter(p => p.id !== idToRemove);
 };
 
-// Calcule le numéro du joueur en fonction de sa position dans players
 const getPlayerNumber = (pairIndex, playerIndexInPair) => {
-  // Le numéro = index dans players + 1
   return pairIndex * 2 + playerIndexInPair + 1;
 };
 
-const playerPairs = computed(() => {
-  const pairs = [];
-  for (let i = 0; i < players.value.length; i += 2) {
-    pairs.push(players.value.slice(i, i + 2));
-  }
-  return pairs;
-});
+const playerPairs = computed(() => _.chunk(players.value, 2));
 
+// Filtrage des compositions d'armée
 const getFilteredCompositions = (idArmyName) => {
   if (!idArmyName || !armyStore.army || !armiesComposition.value) return [];
   const uniqueCompositions = new Map();
+  
   armyStore.army
     .filter(army => army.armyName_idArmyName === idArmyName)
     .forEach(army => {
@@ -321,24 +323,25 @@ const getFilteredCompositions = (idArmyName) => {
         uniqueCompositions.set(comp.idArmyComposition, comp);
       }
     });
+    
   return Array.from(uniqueCompositions.values());
 };
 
+// URL de l'image d'armée
 const getArmyImageUrl = (armyId) => {
   const photo = armyPhotos.value.find(p => p.armyName_idArmyName === armyId);
   return photo ? `/img/armees/${photo.photoArmyName}` : '/img/armees/tow-battle.png';
 };
 
+// Sauvegarde du rapport
 const saveBattleReport = () => {
-  const formData = new FormData();
-
-  // Construction de l'objet à envoyer (sans photos)
+  // Préparer les données à envoyer
   const reportToSend = {
     nameBattleReport: battleTitle.value,
     descriptionBattleReport: description.value,
     scenario_idScenario: scenario.value,
     armyPoints: armyPoints.value,
-    idUser: profileStore.profile.id,
+    idUser: authStore.profile.id,
     players: players.value.map(p => ({
       playerName: p.name || null,
       playerScore: p.score != null ? String(p.score) : null,
@@ -346,28 +349,85 @@ const saveBattleReport = () => {
       armyName_idArmyName: p.army ?? null,
       armyComposition_idArmyComposition: p.armyComposition ?? null,
     })),
-    fileBattleReportPhoto: fileBattleReportPhoto.value.map(p => ({
-      name: p.name || null,
-      fileBattleReportPhoto: p.fileBattleReportPhoto || null,
-    }))
+    // On ne touche pas aux photos existantes ici
   };
 
-  let action;
   if (reportId) {
-    action = battleReportStore.updateBattleReport({ ...reportToSend, idBattleReport: reportId });
-  } else {
-    action = battleReportStore.postBattleReport(reportToSend);
-  }
-
-  action
-    .then(() => router.push('/AllBattleReports'))
-    .catch(err => {
+    // Mise à jour du rapport existant
+    battleReportStore.updateBattleReport({ 
+      ...reportToSend, 
+      idBattleReport: reportId 
+    }).then(() => {
+      // Uploader les nouvelles photos seulement si elles existent
+      if (fileBattleReportPhoto.value.length > 0) {
+        return addPhotosToExistingReport();
+      }
+      return Promise.resolve();
+    }).then(() => {
+      router.push('/AllBattleReports');
+    }).catch(err => {
       console.error('Erreur lors de la sauvegarde :', err);
       alert('Une erreur est survenue. Vérifiez la console.');
     });
+  } else {
+    // Création d'un nouveau rapport
+    battleReportStore.createBattleReport(reportToSend)
+      .then(data => {
+        if (!data || !data.idBattleReport) {
+          throw new Error('Le rapport créé n\'a pas d\'ID');
+        }
+        
+        if (fileBattleReportPhoto.value.length > 0) {
+          const files = fileBattleReportPhoto.value.map(photo => photo.fileBattleReportPhoto);
+          return battleReportStore.uploadPhotos(data.idBattleReport, files);
+        }
+        return Promise.resolve();
+      })
+      .then(() => {
+        router.push('/AllBattleReports');
+      })
+      .catch(err => {
+        console.error('Erreur lors de la sauvegarde :', err);
+        alert('Une erreur est survenue. Vérifiez la console.');
+      });
+  }
 };
 
+// Ajout de photos à un rapport existant
+const addPhotosToExistingReport = () => {
+  if (!reportId || fileBattleReportPhoto.value.length === 0) {
+    return Promise.resolve();
+  }
 
+  const files = fileBattleReportPhoto.value.map(photo => photo.fileBattleReportPhoto);
+  
+  return battleReportStore.uploadPhotos(reportId, files)
+    .then((fileNames) => {
+      // Ajoute les nouveaux noms de fichiers aux existants
+      existingPhotoFileNames.value = [...existingPhotoFileNames.value, ...fileNames];
+      
+      // Vide la liste des fichiers à uploader
+      fileBattleReportPhoto.value = [];
+      
+      // Met à jour les previews avec les nouvelles images
+      return Promise.all(files.map(file => {
+        return new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onload = (e) => resolve(e.target.result);
+          reader.readAsDataURL(file);
+        });
+      }));
+    })
+    .then(newPreviews => {
+      photoPreviews.value = [...photoPreviews.value, ...newPreviews];
+    })
+    .catch(err => {
+      console.error('Erreur lors de l\'upload des photos :', err);
+      throw err;
+    });
+};
+
+// Chargement d'un rapport existant
 const loadBattleReport = (id) => {
   battleReportStore.fetchBattleReportById(id)
     .then(report => {
@@ -375,34 +435,56 @@ const loadBattleReport = (id) => {
       description.value = report.descriptionBattleReport;
       scenario.value = report.scenario_idScenario;
       armyPoints.value = report.armyPoints;
-
-      if (report.players?.length) {
-  players.value = report.players.map((p, index) => ({
-    id: index,
-    name: index === 0 ? p.playerName || profileStore.profile.username : p.playerName,
-    score: Number(p.playerScore),
-    alliance: p.alliance_idAlliance,
-    army: p.armyName_idArmyName,
-    armyComposition: p.armyComposition_idArmyComposition
-  }));
-  nextPlayerId = report.players.length;
-}
-
+      
+      players.value = report.players.map((player, index) => ({
+        id: index,
+        name: player.playerName || '',
+        alliance: player.alliance_idAlliance || '',
+        army: player.armyName_idArmyName || '',
+        armyComposition: player.armyComposition_idArmyComposition || '',
+        score: player.playerScore ? Number(player.playerScore) : 0,
+      }));
+      
+      nextPlayerId = players.value.length;
+      
+      return fetch(`http://localhost:8080/battlereport/${id}/photos`);
     })
-    .catch(err => console.error('Erreur lors du chargement du rapport :', err));
+    .then(res => {
+      if (!res.ok) throw new Error('Erreur lors du chargement des photos');
+      return res.json();
+    })
+    .then(photoList => {
+      existingPhotoFileNames.value = photoList.map(photo => photo.nameBattleReportPhoto);
+      
+      // Créer un tableau de promesses pour chaque requête d'image
+      const photoPromises = photoList.map(photo => 
+        fetch(`http://localhost:8080/image-url/${photo.nameBattleReportPhoto}`)
+          .then(res => {
+            if (!res.ok) throw new Error('Erreur lors du chargement de l\'image');
+            return res.text();
+          })
+      );
+      
+      // Attendre que toutes les promesses soient résolues
+      return Promise.all(photoPromises);
+    })
+    .then(urls => {
+      photoPreviews.value = urls;
+    })
+    .catch(err => {
+      console.error('Erreur chargement rapport:', err);
+      alert('Erreur chargement rapport.');
+    });
 };
 
+// Initialisation
 onMounted(() => {
-  armyNameStore.getArmyName();
-  armyCompositionStore.getArmyComposition();
-  scenarioStore.getScenario();
-  allianceStore.getAlliance();
-  armyStore.getArmy();
-  armyPhotoStore.getArmyPhoto();
-
-  if (reportId) loadBattleReport(reportId);
+  if (reportId) {
+    loadBattleReport(reportId);
+  }
 });
 </script>
+
 
 <style scoped>
 .background {
