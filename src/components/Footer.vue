@@ -211,6 +211,18 @@ const currentYear = computed(() => new Date().getFullYear());
   .justify-md-start {
     justify-content: center !important;
   }
+
+  /* Logo et titre en colonne sur mobile */
+  .d-flex.align-center.justify-center.justify-md-start {
+    flex-direction: column !important;
+    align-items: center !important;
+  }
+
+  .ml-3 {
+    margin-left: 0 !important;
+    margin-top: 1rem !important;
+    text-align: center !important;
+  }
 }
 
 /* Divider styling */

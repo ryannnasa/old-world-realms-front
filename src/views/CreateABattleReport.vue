@@ -42,7 +42,15 @@
       <v-card class="mb-4 card-container">
         <v-card-title>Description de la bataille</v-card-title>
         <v-card-text>
-          <v-textarea v-model="description" label="Racontez votre bataille..." outlined class="input-field" />
+          <v-textarea 
+            v-model="description" 
+            label="Racontez votre bataille..." 
+            outlined 
+            class="input-field"
+            auto-grow
+            rows="3"
+            max-rows="15"
+          />
           <!-- Photos -->
 <v-card class="mb-4 card-container">
   <v-card-title>Photos de la bataille</v-card-title>
@@ -83,7 +91,10 @@
         @change="handleFileChange"
       />
     </div>
-    <p class="text-caption mt-2">Maximum : 10 photos</p>
+    <div class="text-caption mt-2">
+      <p class="mb-1">Maximum : 10 photos</p>
+      <p class="mb-0 text-grey">Formats acceptés: JPG, PNG, WebP | Taille max: 5MB par photo</p>
+    </div>
   </v-card-text>
 </v-card>
 
@@ -220,7 +231,6 @@ const armyStore = useArmyStore();
 const armyPhotoStore = useArmyPhotoStore();
 const battleReportStore = useBattleReportStore();
 const authStore = useAuthStore();
-
 const battleTitle = ref('');
 const description = ref('');
 const scenario = ref('');
@@ -232,10 +242,8 @@ const alliances = computed(() => allianceStore.alliance || []);
 const armyPhotos = computed(() => armyPhotoStore.armyPhoto || []);
 const photoPreviews = ref([]);
 const fileInput = ref(null);
-const selectedFiles = ref([]); // Nouveaux fichiers sélectionnés
-const existingPhotos = ref([]); // Photos existantes du rapport (nom + URL)
-
-// Fonction pour réinitialiser les données du formulaire
+const selectedFiles = ref([]);
+const existingPhotos = ref([]);
 const resetFormData = () => {
   battleTitle.value = '';
   description.value = '';
@@ -244,8 +252,6 @@ const resetFormData = () => {
   photoPreviews.value = [];
   selectedFiles.value = [];
   existingPhotos.value = [];
-  
-  // Réinitialiser les joueurs avec les valeurs par défaut
   players.value = [
     { id: 0, name: authStore.profile?.username || '', alliance: '', army: '', armyComposition: '', score: 0 },
     { id: 1, name: '', alliance: '', army: '', armyComposition: '', score: 0 }
@@ -253,7 +259,6 @@ const resetFormData = () => {
   nextPlayerId = 2;
 };
 
-// Gestion des fichiers photos
 const triggerFileInput = () => {
   const maxPhotos = 10;
   const currentCount = existingPhotos.value.length + selectedFiles.value.length;
@@ -263,33 +268,48 @@ const triggerFileInput = () => {
 const handleFileChange = (event) => {
   const newFiles = Array.from(event.target.files);
   const maxPhotos = 10;
+  const maxFileSize = 5 * 1024 * 1024;
+  const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
   const availableSlots = maxPhotos - (existingPhotos.value.length + selectedFiles.value.length);
+  const validFiles = [];
+  const errors = [];
   
-  // Traiter les nouveaux fichiers
-  newFiles.slice(0, availableSlots).forEach((file) => {
-    selectedFiles.value.push(file);
-    
-    // Créer une preview
+  newFiles.forEach((file) => {
+    if (!allowedTypes.includes(file.type)) {
+      errors.push(`${file.name}: Format non supporté. Utilisez JPG, PNG ou WebP.`);
+      return;
+    }
+    if (file.size > maxFileSize) {
+      const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+      errors.push(`${file.name}: Fichier trop volumineux (${fileSizeMB}MB). Maximum autorisé: 5MB.`);
+      return;
+    }
+    validFiles.push(file);
+  });
+  if (errors.length > 0) {
+    alert('Erreurs détectées:\n\n' + errors.join('\n\n') + '\n\nLes fichiers valides ont été ajoutés.');
+  }
+  validFiles.slice(0, availableSlots).forEach((file) => {
+    selectedFiles.value.push(file);    
     const reader = new FileReader();
     reader.onload = function(e) {
       photoPreviews.value.push(e.target.result);
     };
     reader.readAsDataURL(file);
   });
-  
+  if (validFiles.length > availableSlots) {
+    alert(`Seuls ${availableSlots} fichier(s) ont été ajoutés. Limite de ${maxPhotos} photos atteinte.`);
+  }  
   event.target.value = '';
 };
 
-// Suppression d'une photo
 const removePhoto = (identifier, isExisting) => {
   if (isExisting) {
-    // Supprimer une photo existante du serveur
     const photoIndex = existingPhotos.value.findIndex(p => p.name === identifier);
     if (photoIndex === -1) return;
     
     battleReportStore.deletePhotos(reportId.value, [identifier])
       .then(() => {
-        // Supprimer de la liste locale
         existingPhotos.value.splice(photoIndex, 1);
         photoPreviews.value.splice(photoIndex, 1);
       })
@@ -298,7 +318,6 @@ const removePhoto = (identifier, isExisting) => {
         alert('Erreur lors de la suppression de la photo');
       });
   } else {
-    // Supprimer un fichier nouvellement sélectionné
     const fileIndex = selectedFiles.value.findIndex(f => f.name === identifier);
     if (fileIndex === -1) return;
     
@@ -307,7 +326,6 @@ const removePhoto = (identifier, isExisting) => {
   }
 };
 
-// Gestion des joueurs
 const players = ref([
   { id: 0, name: authStore.profile?.username || '', alliance: '', army: '', armyComposition: '', score: 0 },
   { id: 1, name: '', alliance: '', army: '', armyComposition: '', score: 0 }
@@ -330,7 +348,6 @@ const getPlayerNumber = (pairIndex, playerIndexInPair) => {
 
 const playerPairs = computed(() => _.chunk(players.value, 2));
 
-// Filtrage des compositions d'armée
 const getFilteredCompositions = (idArmyName) => {
   if (!idArmyName || !armyStore.army || !armiesComposition.value) return [];
   const uniqueCompositions = new Map();
@@ -349,15 +366,12 @@ const getFilteredCompositions = (idArmyName) => {
   return Array.from(uniqueCompositions.values());
 };
 
-// URL de l'image d'armée
 const getArmyImageUrl = (armyId) => {
   const photo = armyPhotos.value.find(p => p.armyName_idArmyName === armyId);
   return photo ? `/img/armees/${photo.photoArmyName}` : '/img/armees/tow-battle.png';
 };
 
-// Sauvegarde du rapport
 const saveBattleReport = () => {
-  // Préparer les données à envoyer
   const reportToSend = {
     nameBattleReport: battleTitle.value,
     descriptionBattleReport: description.value,
@@ -372,71 +386,76 @@ const saveBattleReport = () => {
       armyComposition_idArmyComposition: p.armyComposition ?? null,
     })),
   };
+  const handlePhotoUpload = (reportData) => {
+    if (selectedFiles.value.length > 0) {
+      const targetId = reportId.value || reportData.idBattleReport;
+      return battleReportStore.uploadPhotos(targetId, selectedFiles.value);
+    }
+    return Promise.resolve();
+  };
+  const handleSuccess = () => {
+    router.push('/AllBattleReports');
+  };
+  const handleError = (err) => {
+    console.error('Erreur lors de la sauvegarde :', err);
+    alert('Une erreur est survenue lors de la sauvegarde.');
+  };
 
   if (reportId.value) {
-    // Mode modification : mettre à jour le rapport existant
     battleReportStore.updateBattleReport({ 
       ...reportToSend, 
       idBattleReport: reportId.value 
     })
-    .then(() => {
-      // Uploader les nouvelles photos si nécessaire
-      if (selectedFiles.value.length > 0) {
-        return battleReportStore.uploadPhotos(reportId.value, selectedFiles.value);
-      }
-      return Promise.resolve();
-    })
-    .then(() => {
-      router.push('/AllBattleReports');
-    })
-    .catch(err => {
-      console.error('Erreur lors de la sauvegarde :', err);
-      alert('Une erreur est survenue lors de la sauvegarde.');
-    });
+    .then(handlePhotoUpload)
+    .then(handleSuccess)
+    .catch(handleError);
   } else {
-    // Mode création : créer un nouveau rapport
     battleReportStore.createBattleReport(reportToSend)
       .then(data => {
-        if (!data || !data.idBattleReport) {
+        if (!data?.idBattleReport) {
           throw new Error('Le rapport créé n\'a pas d\'ID');
         }
-        
-        // Uploader les photos si nécessaire
-        if (selectedFiles.value.length > 0) {
-          return battleReportStore.uploadPhotos(data.idBattleReport, selectedFiles.value);
-        }
-        return Promise.resolve();
+        return handlePhotoUpload(data);
       })
-      .then(() => {
-        router.push('/AllBattleReports');
-      })
-      .catch(err => {
-        console.error('Erreur lors de la sauvegarde :', err);
-        alert('Une erreur est survenue lors de la sauvegarde.');
-      });
+      .then(handleSuccess)
+      .catch(handleError);
   }
 };
 
-// Chargement d'un rapport existant
+const loadReportData = (report) => {
+  battleTitle.value = report.nameBattleReport;
+  description.value = report.descriptionBattleReport;
+  scenario.value = report.scenario_idScenario;
+  armyPoints.value = report.armyPoints;
+  
+  players.value = report.players.map((player, index) => ({
+    id: index,
+    name: player.playerName || '',
+    alliance: player.alliance_idAlliance || '',
+    army: player.armyName_idArmyName || '',
+    armyComposition: player.armyComposition_idArmyComposition || '',
+    score: player.playerScore ? Number(player.playerScore) : 0,
+  }));
+  
+  nextPlayerId = players.value.length;
+};
+
+const loadPhotoUrl = (photo) => {
+  return fetch(`http://localhost:8080/image-url/${photo.nameBattleReportPhoto}`)
+    .then(res => {
+      if (!res.ok) throw new Error('Erreur lors du chargement de l\'image');
+      return res.text();
+    })
+    .then(url => ({
+      name: photo.nameBattleReportPhoto,
+      url: url
+    }));
+};
+
 const loadBattleReport = (id) => {
   battleReportStore.fetchBattleReportById(id)
     .then(report => {
-      battleTitle.value = report.nameBattleReport;
-      description.value = report.descriptionBattleReport;
-      scenario.value = report.scenario_idScenario;
-      armyPoints.value = report.armyPoints;
-      
-      players.value = report.players.map((player, index) => ({
-        id: index,
-        name: player.playerName || '',
-        alliance: player.alliance_idAlliance || '',
-        army: player.armyName_idArmyName || '',
-        armyComposition: player.armyComposition_idArmyComposition || '',
-        score: player.playerScore ? Number(player.playerScore) : 0,
-      }));
-      
-      nextPlayerId = players.value.length;
-      
+      loadReportData(report);
       return fetch(`http://localhost:8080/battlereport/${id}/photos`);
     })
     .then(res => {
@@ -444,24 +463,9 @@ const loadBattleReport = (id) => {
       return res.json();
     })
     .then(photoList => {
-      // Réinitialiser les photos existantes
       existingPhotos.value = [];
       photoPreviews.value = [];
-      
-      // Charger les photos existantes avec leurs URLs
-      const photoPromises = photoList.map(photo => 
-        fetch(`http://localhost:8080/image-url/${photo.nameBattleReportPhoto}`)
-          .then(res => {
-            if (!res.ok) throw new Error('Erreur lors du chargement de l\'image');
-            return res.text();
-          })
-          .then(url => ({
-            name: photo.nameBattleReportPhoto,
-            url: url
-          }))
-      );
-      
-      return Promise.all(photoPromises);
+      return Promise.all(photoList.map(loadPhotoUrl));
     })
     .then(photos => {
       existingPhotos.value = photos;
@@ -473,9 +477,7 @@ const loadBattleReport = (id) => {
     });
 };
 
-// Initialisation
 onMounted(() => {
-  // Charger tous les stores nécessaires
   Promise.all([
     armyNameStore.getArmyName(),
     armyCompositionStore.getArmyComposition(),
@@ -484,11 +486,9 @@ onMounted(() => {
     armyStore.getArmy(),
     armyPhotoStore.getArmyPhoto()
   ]).then(() => {
-    // Une fois les stores chargés, charger le rapport si c'est une modification
     if (reportId.value) {
       loadBattleReport(reportId.value);
     } else {
-      // S'assurer que le formulaire est vide pour une création
       resetFormData();
     }
   }).catch(err => {
@@ -496,20 +496,16 @@ onMounted(() => {
   });
 });
 
-// Watcher pour détecter les changements de route (modification -> création ou vice versa)
 watch(() => route.params.id, (newId, oldId) => {
   if (newId !== oldId) {
     if (newId) {
-      // Passer en mode modification
       loadBattleReport(newId);
     } else {
-      // Passer en mode création - réinitialiser le formulaire
       resetFormData();
     }
   }
 });
 </script>
-
 
 <style scoped>
 .background {
@@ -529,102 +525,10 @@ watch(() => route.params.id, (newId, oldId) => {
   padding: 20px;
 }
 
-/* Responsive Design */
-@media (max-width: 1200px) {
-  .page-container {
-    margin-top: 90px;
-    min-height: calc(100vh - 90px);
-    padding: 15px;
-  }
-  
-  .background {
-    padding: 15px;
-  }
-}
-
-@media (max-width: 959px) {
-  .page-container {
-    margin-top: 100px;
-    min-height: calc(100vh - 100px);
-    padding: 15px;
-  }
-  
-  .background {
-    padding: 15px;
-  }
-}
-
-@media (max-width: 768px) {
-  .page-container {
-    margin-top: 110px;
-    min-height: calc(100vh - 110px);
-    padding: 10px;
-  }
-  
-  .background {
-    padding: 10px;
-  }
-}
-
-@media (max-width: 600px) {
-  .page-container {
-    margin-top: 120px;
-    min-height: calc(100vh - 120px);
-    padding: 8px;
-  }
-  
-  .background {
-    padding: 8px;
-  }
-}
-
-@media (max-width: 480px) {
-  .page-container {
-    margin-top: 130px;
-    min-height: calc(100vh - 130px);
-    padding: 5px;
-  }
-  
-  .background {
-    padding: 5px;
-  }
-}
-
 .card-container {
   border-radius: 15px;
   background-color: #332018;
   color: #EBDEC2;
-}
-
-/* Responsive pour les cartes */
-@media (max-width: 768px) {
-  .card-container {
-    border-radius: 12px;
-  }
-  
-  .card-container .v-card-title {
-    font-size: 1.2rem !important;
-    padding: 12px 16px !important;
-  }
-  
-  .card-container .v-card-text {
-    padding: 12px 16px !important;
-  }
-}
-
-@media (max-width: 480px) {
-  .card-container {
-    border-radius: 10px;
-  }
-  
-  .card-container .v-card-title {
-    font-size: 1.1rem !important;
-    padding: 10px 12px !important;
-  }
-  
-  .card-container .v-card-text {
-    padding: 10px 12px !important;
-  }
 }
 
 .save-button {
@@ -641,31 +545,116 @@ watch(() => route.params.id, (newId, oldId) => {
   border-radius: 8px;
 }
 
-/* Responsive pour le bouton de sauvegarde */
+.input-field {
+  color: #EBDEC2;
+}
+
+.battle-image {
+  width: 50%;
+  height: 300px;
+  background-size: cover;
+  background-position: center;
+  border-radius: 10px;
+  margin: 20px auto 0 auto;
+}
+
+.photo-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.photo-thumbnail, .photo-add {
+  width: 100px;
+  height: 100px;
+  border-radius: 8px;
+  position: relative;
+  background-color: #f0f0f0;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+
+.remove-btn {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background-color: rgba(0, 0, 0, 0.6);
+  padding: 2px;
+}
+
+/* === RESPONSIVE DESIGN === */
+
+/* Breakpoint 1200px */
+@media (max-width: 1200px) {
+  .page-container {
+    margin-top: 90px;
+    min-height: calc(100vh - 90px);
+    padding: 15px;
+  }
+  
+  .background {
+    padding: 15px;
+  }
+  
+  .battle-image {
+    width: 60%;
+    height: 280px;
+  }
+}
+
+/* Breakpoint 959px */
+@media (max-width: 959px) {
+  .page-container {
+    margin-top: 100px;
+    min-height: calc(100vh - 100px);
+    padding: 15px;
+  }
+  
+  .background {
+    padding: 15px;
+  }
+  
+  .battle-image {
+    width: 70%;
+    height: 250px;
+  }
+}
+
+/* Breakpoint 768px */
 @media (max-width: 768px) {
+  .page-container {
+    margin-top: 110px;
+    min-height: calc(100vh - 110px);
+    padding: 10px;
+  }
+  
+  .background {
+    padding: 10px;
+  }
+  
+  .card-container {
+    border-radius: 12px;
+  }
+  
+  .card-container .v-card-title {
+    font-size: 1.2rem !important;
+    padding: 12px 16px !important;
+  }
+  
+  .card-container .v-card-text {
+    padding: 12px 16px !important;
+  }
+  
   .save-button {
     padding: 12px 24px !important;
     min-width: 200px;
     max-width: 300px;
     border-radius: 10px;
   }
-}
-
-@media (max-width: 480px) {
-  .save-button {
-    padding: 10px 20px !important;
-    min-width: 180px;
-    max-width: 250px;
-    border-radius: 8px;
-  }
-}
-
-.input-field {
-  color: #EBDEC2;
-}
-
-/* Responsive pour les champs de saisie */
-@media (max-width: 768px) {
+  
   .input-field {
     margin-bottom: 12px !important;
   }
@@ -673,20 +662,7 @@ watch(() => route.params.id, (newId, oldId) => {
   .input-field .v-field__input {
     font-size: 0.95rem !important;
   }
-}
-
-@media (max-width: 480px) {
-  .input-field {
-    margin-bottom: 10px !important;
-  }
   
-  .input-field .v-field__input {
-    font-size: 0.9rem !important;
-  }
-}
-
-/* Responsive pour les rangées de joueurs */
-@media (max-width: 768px) {
   .mb-6 {
     margin-bottom: 1.5rem !important;
   }
@@ -699,9 +675,92 @@ watch(() => route.params.id, (newId, oldId) => {
     border-bottom: 2px solid #332018;
     padding-bottom: 1.5rem !important;
   }
+  
+  .battle-image {
+    width: 80%;
+    height: 220px;
+  }
+  
+  .photo-grid {
+    gap: 8px;
+  }
+  
+  .photo-thumbnail, .photo-add {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .remove-btn {
+    padding: 1px;
+  }
+  
+  .remove-btn .v-icon {
+    font-size: 18px !important;
+  }
+  
+  .v-btn {
+    font-size: 0.9rem !important;
+  }
 }
 
+/* Breakpoint 600px */
+@media (max-width: 600px) {
+  .page-container {
+    margin-top: 120px;
+    min-height: calc(100vh - 120px);
+    padding: 8px;
+  }
+  
+  .background {
+    padding: 8px;
+  }
+  
+  .battle-image {
+    width: 90%;
+    height: 200px;
+  }
+}
+
+/* Breakpoint 480px */
 @media (max-width: 480px) {
+  .page-container {
+    margin-top: 130px;
+    min-height: calc(100vh - 130px);
+    padding: 5px;
+  }
+  
+  .background {
+    padding: 5px;
+  }
+  
+  .card-container {
+    border-radius: 10px;
+  }
+  
+  .card-container .v-card-title {
+    font-size: 1.1rem !important;
+    padding: 10px 12px !important;
+  }
+  
+  .card-container .v-card-text {
+    padding: 10px 12px !important;
+  }
+  
+  .save-button {
+    padding: 10px 20px !important;
+    min-width: 180px;
+    max-width: 250px;
+    border-radius: 8px;
+  }
+  
+  .input-field {
+    margin-bottom: 10px !important;
+  }
+  
+  .input-field .v-field__input {
+    font-size: 0.9rem !important;
+  }
+  
   .mb-6 {
     margin-bottom: 1rem !important;
   }
@@ -719,121 +778,22 @@ watch(() => route.params.id, (newId, oldId) => {
     font-size: 1.1rem !important;
     margin-bottom: 8px !important;
   }
-}
-
-.battle-image {
-  width: 50%;
-  height: 300px;
-  background-size: cover;
-  background-position: center;
-  border-radius: 10px;
-  margin: 20px auto 0 auto;
-}
-
-/* Responsive pour les images de bataille */
-@media (max-width: 1200px) {
-  .battle-image {
-    width: 60%;
-    height: 280px;
-  }
-}
-
-@media (max-width: 959px) {
-  .battle-image {
-    width: 70%;
-    height: 250px;
-  }
-}
-
-@media (max-width: 768px) {
-  .battle-image {
-    width: 80%;
-    height: 220px;
-  }
-}
-
-@media (max-width: 600px) {
-  .battle-image {
-    width: 90%;
-    height: 200px;
-  }
-}
-
-@media (max-width: 480px) {
+  
   .battle-image {
     width: 100%;
     height: 180px;
     margin: 15px auto 0 auto;
   }
-}
-
-.photo-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-/* Responsive pour la grille de photos */
-@media (max-width: 768px) {
-  .photo-grid {
-    gap: 8px;
-  }
-}
-
-@media (max-width: 480px) {
+  
   .photo-grid {
     gap: 6px;
   }
-}
-
-.photo-thumbnail, .photo-add {
-  width: 100px;
-  height: 100px;
-  border-radius: 8px;
-  position: relative;
-  background-color: #f0f0f0;
-  overflow: hidden;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-}
-
-/* Responsive pour les thumbnails de photos */
-@media (max-width: 768px) {
-  .photo-thumbnail, .photo-add {
-    width: 80px;
-    height: 80px;
-  }
-}
-
-@media (max-width: 480px) {
+  
   .photo-thumbnail, .photo-add {
     width: 70px;
     height: 70px;
   }
-}
-
-.remove-btn {
-  position: absolute;
-  top: 2px;
-  right: 2px;
-  background-color: rgba(0, 0, 0, 0.6);
-  padding: 2px;
-}
-
-/* Responsive pour les boutons d'action */
-@media (max-width: 768px) {
-  .remove-btn {
-    padding: 1px;
-  }
   
-  .remove-btn .v-icon {
-    font-size: 18px !important;
-  }
-}
-
-@media (max-width: 480px) {
   .remove-btn {
     top: 1px;
     right: 1px;
@@ -843,16 +803,7 @@ watch(() => route.params.id, (newId, oldId) => {
   .remove-btn .v-icon {
     font-size: 16px !important;
   }
-}
-
-/* Amélioration responsive pour les boutons d'ajout/suppression de joueurs */
-@media (max-width: 768px) {
-  .v-btn {
-    font-size: 0.9rem !important;
-  }
-}
-
-@media (max-width: 480px) {
+  
   .v-btn {
     font-size: 0.85rem !important;
     padding: 8px 16px !important;
@@ -862,5 +813,4 @@ watch(() => route.params.id, (newId, oldId) => {
     border-width: 1px !important;
   }
 }
-
 </style>

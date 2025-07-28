@@ -444,6 +444,13 @@ function deleteReport(id) {
   .background {
     padding: 15px;
   }
+  
+  /* Seulement les cartes de bataille, pas les filtres */
+  .v-row:last-child {
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
 }
 
 @media (max-width: 768px) {
@@ -460,6 +467,18 @@ function deleteReport(id) {
   .button-container {
     margin-bottom: 15px;
   }
+  
+  /* Seulement les cartes de bataille, pas les filtres */
+  .v-row:last-child {
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  /* Réduire la hauteur des images sur mobile */
+  .battle-images-container {
+    height: 140px !important;
+  }
 }
 
 @media (max-width: 600px) {
@@ -471,6 +490,33 @@ function deleteReport(id) {
   
   .background {
     padding: 8px;
+  }
+  
+  /* Seulement les cartes de bataille, pas les filtres */
+  .v-row:last-child {
+    max-width: 450px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  /* Réduire encore plus la hauteur des images */
+  .battle-images-container {
+    height: 120px !important;
+  }
+  
+  /* Réduire les paddings des cartes */
+  .v-card-title {
+    font-size: 1.1rem !important;
+    padding: 10px 12px !important;
+  }
+  
+  .v-card-subtitle {
+    font-size: 0.9rem !important;
+    padding: 6px 12px !important;
+  }
+  
+  .v-card-text {
+    padding: 6px 12px 10px 12px !important;
   }
   
   .chip-container {
@@ -506,22 +552,34 @@ function deleteReport(id) {
     padding: 5px;
   }
   
-  .battle-images-container {
-    height: 150px;
+  /* Seulement les cartes de bataille, pas les filtres */
+  .v-row:last-child {
+    max-width: 380px;
+    margin-left: auto;
+    margin-right: auto;
   }
   
+  /* Hauteur très compacte pour mobile */
+  .battle-images-container {
+    height: 80px !important;
+  }
+  
+  /* Cartes très compactes */
   .v-card-title {
-    font-size: 1.1rem !important;
-    padding: 12px !important;
+    font-size: 0.95rem !important;
+    padding: 6px 8px !important;
+    line-height: 1.2 !important;
   }
   
   .v-card-subtitle {
-    font-size: 0.9rem !important;
-    padding: 8px 12px !important;
+    font-size: 0.8rem !important;
+    padding: 3px 8px !important;
+    line-height: 1.1 !important;
   }
   
   .v-card-text {
-    padding: 8px 12px !important;
+    padding: 3px 8px 6px 8px !important;
+    font-size: 0.85rem !important;
   }
   
   .chip-container {
@@ -663,10 +721,16 @@ function deleteReport(id) {
   flex: 2;
 }
 
+/* Hauteur par défaut pour les grands écrans */
+@media (min-width: 769px) {
+  .battle-images-container {
+    height: 200px;
+  }
+}
+
 .battle-images-container {
   position: relative;
   width: 100%;
-  height: 200px;
   display: flex;
   justify-content: space-between;
   overflow: hidden;
