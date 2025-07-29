@@ -135,7 +135,7 @@ const showSnackbar = (message, color = 'success') => {
   snackbar.value = true;
 };
 
-const submitForm = async () => {
+const submitForm = () => {
   if (!isFormValid.value) {
     showSnackbar('Veuillez remplir tous les champs obligatoires', 'error');
     return;
@@ -143,23 +143,24 @@ const submitForm = async () => {
 
   isSubmitting.value = true;
 
-  try {
-    // Simulation d'envoi (remplacez par votre API)
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // Réinitialiser le formulaire
-    form.name = '';
-    form.email = '';
-    form.subject = '';
-    form.message = '';
-    
-    showSnackbar('Votre message a été envoyé avec succès ! Nous vous répondrons bientôt.', 'success');
-  } catch (error) {
-    showSnackbar('Une erreur est survenue lors de l\'envoi du message. Veuillez réessayer.', 'error');
-    console.error('Erreur lors de l\'envoi:', error);
-  } finally {
-    isSubmitting.value = false;
-  }
+  // Simulation d'envoi (remplacez par votre API)
+  new Promise(resolve => setTimeout(resolve, 2000))
+    .then(() => {
+      // Réinitialiser le formulaire
+      form.name = '';
+      form.email = '';
+      form.subject = '';
+      form.message = '';
+      
+      showSnackbar('Votre message a été envoyé avec succès ! Nous vous répondrons bientôt.', 'success');
+    })
+    .catch(error => {
+      showSnackbar('Une erreur est survenue lors de l\'envoi du message. Veuillez réessayer.', 'error');
+      console.error('Erreur lors de l\'envoi:', error);
+    })
+    .finally(() => {
+      isSubmitting.value = false;
+    });
 };
 </script>
 

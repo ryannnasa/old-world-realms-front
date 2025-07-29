@@ -271,36 +271,48 @@ const handleFileChange = (event) => {
   const maxFileSize = 5 * 1024 * 1024;
   const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
   const availableSlots = maxPhotos - (existingPhotos.value.length + selectedFiles.value.length);
-  const validFiles = [];
-  const errors = [];
   
-  newFiles.forEach((file) => {
+  // Validation des fichiers avec filter et map
+  const validationResults = newFiles.map(file => {
     if (!allowedTypes.includes(file.type)) {
-      errors.push(`${file.name}: Format non supporté. Utilisez JPG, PNG ou WebP.`);
-      return;
+      return { file: null, error: `${file.name}: Format non supporté. Utilisez JPG, PNG ou WebP.` };
     }
     if (file.size > maxFileSize) {
       const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
-      errors.push(`${file.name}: Fichier trop volumineux (${fileSizeMB}MB). Maximum autorisé: 5MB.`);
-      return;
+      return { file: null, error: `${file.name}: Fichier trop volumineux (${fileSizeMB}MB). Maximum autorisé: 5MB.` };
     }
-    validFiles.push(file);
+    return { file: file, error: null };
   });
+  
+  const validFiles = validationResults.filter(result => result.file !== null).map(result => result.file);
+  const errors = validationResults.filter(result => result.error !== null).map(result => result.error);
+  
   if (errors.length > 0) {
     alert('Erreurs détectées:\n\n' + errors.join('\n\n') + '\n\nLes fichiers valides ont été ajoutés.');
   }
-  validFiles.slice(0, availableSlots).forEach((file) => {
-    selectedFiles.value.push(file);    
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      photoPreviews.value.push(e.target.result);
-    };
-    reader.readAsDataURL(file);
+  
+  const filesToAdd = validFiles.slice(0, availableSlots);
+  
+  // Traitement des fichiers avec Promise.all pour éviter les boucles
+  const fileProcessingPromises = filesToAdd.map(file => {
+    selectedFiles.value = [...selectedFiles.value, file];
+    
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        photoPreviews.value = [...photoPreviews.value, e.target.result];
+        resolve();
+      };
+      reader.readAsDataURL(file);
+    });
   });
-  if (validFiles.length > availableSlots) {
-    alert(`Seuls ${availableSlots} fichier(s) ont été ajoutés. Limite de ${maxPhotos} photos atteinte.`);
-  }  
-  event.target.value = '';
+  
+  Promise.all(fileProcessingPromises).then(() => {
+    if (validFiles.length > availableSlots) {
+      alert(`Seuls ${availableSlots} fichier(s) ont été ajoutés. Limite de ${maxPhotos} photos atteinte.`);
+    }
+    event.target.value = '';
+  });
 };
 
 const removePhoto = (identifier, isExisting) => {
@@ -310,8 +322,8 @@ const removePhoto = (identifier, isExisting) => {
     
     battleReportStore.deletePhotos(reportId.value, [identifier])
       .then(() => {
-        existingPhotos.value.splice(photoIndex, 1);
-        photoPreviews.value.splice(photoIndex, 1);
+        existingPhotos.value = existingPhotos.value.filter((_, index) => index !== photoIndex);
+        photoPreviews.value = photoPreviews.value.filter((_, index) => index !== photoIndex);
       })
       .catch(err => {
         console.error('Erreur suppression photo:', err);
@@ -321,8 +333,9 @@ const removePhoto = (identifier, isExisting) => {
     const fileIndex = selectedFiles.value.findIndex(f => f.name === identifier);
     if (fileIndex === -1) return;
     
-    selectedFiles.value.splice(fileIndex, 1);
-    photoPreviews.value.splice(existingPhotos.value.length + fileIndex, 1);
+    selectedFiles.value = selectedFiles.value.filter((_, index) => index !== fileIndex);
+    const previewIndexToRemove = existingPhotos.value.length + fileIndex;
+    photoPreviews.value = photoPreviews.value.filter((_, index) => index !== previewIndexToRemove);
   }
 };
 
@@ -334,7 +347,7 @@ let nextPlayerId = 2;
 
 const addPlayer = () => {
   if (players.value.length < 10) {
-    players.value.push({ id: nextPlayerId++, name: '', alliance: '', army: '', armyComposition: '', score: 0 });
+    players.value = [...players.value, { id: nextPlayerId++, name: '', alliance: '', army: '', armyComposition: '', score: 0 }];
   }
 };
 
@@ -350,20 +363,13 @@ const playerPairs = computed(() => _.chunk(players.value, 2));
 
 const getFilteredCompositions = (idArmyName) => {
   if (!idArmyName || !armyStore.army || !armiesComposition.value) return [];
-  const uniqueCompositions = new Map();
   
-  armyStore.army
-    .filter(army => army.armyName_idArmyName === idArmyName)
-    .forEach(army => {
-      const comp = armiesComposition.value.find(
-        c => c.idArmyComposition === army.armyComposition_idArmyComposition
-      );
-      if (comp && !uniqueCompositions.has(comp.idArmyComposition)) {
-        uniqueCompositions.set(comp.idArmyComposition, comp);
-      }
-    });
-    
-  return Array.from(uniqueCompositions.values());
+  const filteredArmies = armyStore.army.filter(army => army.armyName_idArmyName === idArmyName);
+  const compositionIds = [...new Set(filteredArmies.map(army => army.armyComposition_idArmyComposition))];
+  
+  return compositionIds
+    .map(id => armiesComposition.value.find(comp => comp.idArmyComposition === id))
+    .filter(comp => comp !== undefined);
 };
 
 const getArmyImageUrl = (armyId) => {
@@ -465,7 +471,9 @@ const loadBattleReport = (id) => {
     .then(photoList => {
       existingPhotos.value = [];
       photoPreviews.value = [];
-      return Promise.all(photoList.map(loadPhotoUrl));
+      
+      const photoPromises = photoList.map(photo => loadPhotoUrl(photo));
+      return Promise.all(photoPromises);
     })
     .then(photos => {
       existingPhotos.value = photos;

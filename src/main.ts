@@ -77,7 +77,3 @@ const authStore = useAuthStore()
 authStore.init().then(() => {
   app.mount('#app')
 })
-
-if (authStore.isLoggedIn) {
-  router.push({path: '/homepage'})
-}

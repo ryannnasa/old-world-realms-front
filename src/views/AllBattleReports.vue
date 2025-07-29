@@ -71,11 +71,11 @@
                 </template>
                 <template v-else>
                   <div
-                    v-for="(alliance, index) in groupedByAlliance(report.players)"
+                    v-for="(alliance, index) in report.groupedAlliances"
                     :key="index"
                     class="battle-image alliance-group"
                     :class="{ 'single-army': alliance.singleArmy }"
-                    :style="{ width: 100 / groupedByAlliance(report.players).length + '%' }"
+                    :style="{ width: 100 / report.groupedAlliances.length + '%' }"
                   >
                     <div
                       v-for="player in alliance"
@@ -93,12 +93,12 @@
               <v-card-title class="mt-2">{{ report.title }}</v-card-title>
 
               <v-card-subtitle class="d-flex align-center justify-center flex-wrap text-center">
-                <template v-for="(alliance, index) in groupedByAlliance(report.players)" :key="index">
+                <template v-for="(alliance, index) in report.groupedAlliances" :key="index">
                   <span class="mx-1 font-weight-medium">
                     {{ alliance.map(player => player.name).join(' / ') }}
                   </span>
                   <v-icon
-                    v-if="index < groupedByAlliance(report.players).length - 1"
+                    v-if="index < report.groupedAlliances.length - 1"
                     class="mx-2"
                     color="grey"
                   >
@@ -141,7 +141,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { useBattleReportStore } from '@/stores/battleReport';
+import { useBattleReportStore, battleReportUtils } from '@/stores/battleReport';
 import { useArmyPhotoStore } from '@/stores/armyPhoto';
 import { useArmyNameStore } from '@/stores/armyName';
 import { useAllianceStore } from '@/stores/alliance';
@@ -169,22 +169,18 @@ const selectedScenario = ref('');
 const selectedPoints = ref(null);
 const NoAlliance = 4;
 const authStore = useAuthStore();
-
-// Variables pour la gestion responsive des filtres
 const showFilters = ref(false);
 const isMobile = ref(false);
 
-// Fonction pour détecter la taille d'écran
 const checkScreenSize = () => {
-  isMobile.value = window.innerWidth < 960; // md breakpoint de Vuetify
+  isMobile.value = window.innerWidth < 960;
   if (!isMobile.value) {
-    showFilters.value = true; // Toujours afficher sur desktop
+    showFilters.value = true;
   } else {
-    showFilters.value = false; // Cacher par défaut sur mobile
+    showFilters.value = false;
   }
 };
 
-// Fonction pour toggle les filtres sur mobile
 const toggleFilters = () => {
   if (isMobile.value) {
     showFilters.value = !showFilters.value;
@@ -257,56 +253,6 @@ const filteredReports = computed(() => {
   });
 });
 
-function getScenarioName(scenarioId) {
-  const scenario = scenarioStore.scenario.find(s => s.idScenario === scenarioId);
-  return scenario ? scenario.scenarioName : 'Inconnu';
-}
-
-function groupedByAlliance(players) {
-  if (!Array.isArray(players)) return [];
-
-  const groupedObj = _.groupBy(players, player => {
-    if (!player.allianceId || player.allianceId === NoAlliance) {
-      return `no-alliance-${player.name}`;
-    }
-    return player.allianceId;
-  });
-
-  const groups = Object.values(groupedObj);
-
-  const firstPlayer = players[0];
-  const firstGroupKey = (!firstPlayer.allianceId || firstPlayer.allianceId === NoAlliance)
-    ? `no-alliance-${firstPlayer.name}`
-    : firstPlayer.allianceId;
-
-  const sortedGroups = [];
-
-  if (groupedObj[firstGroupKey]) {
-    sortedGroups.push(groupedObj[firstGroupKey]);
-    delete groupedObj[firstGroupKey];
-  }
-  for (const group of Object.values(groupedObj)) {
-    sortedGroups.push(group);
-  }
-
-  return sortedGroups;
-}
-
-function getArmyImageUrl(armyId) {
-  const photo = armyPhotoStore.armyPhoto.find(p => p.armyName_idArmyName === armyId);
-  return photo ? `/img/armees/${photo.photoArmyName}` : '/img/armees/tow-battle.png';
-}
-
-function getArmyName(armyId) {
-  const army = armyNameStore.armyName.find(a => a.idArmyName === armyId);
-  return army ? army.nameArmyName : 'Inconnu';
-}
-
-function getAllianceName(allianceId) {
-  const alliance = allianceStore.alliance.find(a => a.idAlliance === allianceId);
-  return alliance ? alliance.nameAlliance : 'Aucune';
-}
-
 function fetchReports() {
   return armyPhotoStore.getArmyPhoto()
     .then(() => armyNameStore.getArmyName())
@@ -317,21 +263,24 @@ function fetchReports() {
         const players = report.players?.map(p => ({
           name: p.playerName,
           allianceId: p.alliance_idAlliance,
-          alliance: getAllianceName(p.alliance_idAlliance),
-          army: getArmyName(p.armyName_idArmyName),
-          armyImage: getArmyImageUrl(p.armyName_idArmyName),
+          alliance: battleReportUtils.getAllianceName(allianceStore, p.alliance_idAlliance),
+          army: battleReportUtils.getArmyName(armyNameStore, p.armyName_idArmyName),
+          armyImage: battleReportUtils.getArmyImageUrl(armyPhotoStore, p.armyName_idArmyName),
           score: p.playerScore
         })) ?? [];
+
+        const groupedAlliances = battleReportUtils.groupedByAlliance(players, NoAlliance);
 
         return {
           id: report.idBattleReport,
           title: report.nameBattleReport,
           description: report.descriptionBattleReport,
-          scenario: getScenarioName(report.scenario_idScenario),
+          scenario: battleReportUtils.getScenarioName(scenarioStore, report.scenario_idScenario),
           points: Number(report.armyPoints),
           faction: players[0]?.army || '',
           opponent: players[1]?.army || '',
-          players
+          players,
+          groupedAlliances
         };
       });
     })
@@ -343,7 +292,6 @@ function fetchReports() {
 const loading = ref(true);
 
 onMounted(() => {
-  // Initialiser la détection de taille d'écran
   checkScreenSize();
   window.addEventListener('resize', checkScreenSize);
   
@@ -386,8 +334,6 @@ function closeSnackbar() {
   snackbar.value = false;
   battleReportStore.clearBattleReportSuccess();
 }
-
-// Fonctions ajoutées pour gérer les boutons
 
 function editReport(id) {
   router.push({ name: 'Modify A New Battle Report', params: { id } });
@@ -434,7 +380,7 @@ function deleteReport(id) {
   }
 }
 
-@media (max-width: 960px) {
+@media (max-width: 960px) and (min-width: 769px) {
   .page-container {
     margin-top: 100px;
     min-height: calc(100vh - 100px);
@@ -444,12 +390,16 @@ function deleteReport(id) {
   .background {
     padding: 15px;
   }
-  
-  /* Seulement les cartes de bataille, pas les filtres */
   .v-row:last-child {
-    max-width: 600px;
+    max-width: 680px;
     margin-left: auto;
     margin-right: auto;
+  }
+  .v-row:last-child .v-col {
+    max-width: 330px;
+  }
+  .battle-images-container {
+    height: 165px !important;
   }
 }
 
@@ -458,26 +408,23 @@ function deleteReport(id) {
     margin-top: 110px;
     min-height: calc(100vh - 110px);
     padding: 10px;
-  }
-  
+  } 
   .background {
     padding: 10px;
-  }
-  
+  }  
   .button-container {
     margin-bottom: 15px;
   }
-  
-  /* Seulement les cartes de bataille, pas les filtres */
   .v-row:last-child {
     max-width: 500px;
     margin-left: auto;
     margin-right: auto;
+  }  
+  .v-row:last-child .v-col {
+    max-width: 100%;
   }
-  
-  /* Réduire la hauteur des images sur mobile */
   .battle-images-container {
-    height: 140px !important;
+    height: 160px !important;
   }
 }
 
@@ -491,40 +438,30 @@ function deleteReport(id) {
   .background {
     padding: 8px;
   }
-  
-  /* Seulement les cartes de bataille, pas les filtres */
   .v-row:last-child {
     max-width: 450px;
     margin-left: auto;
     margin-right: auto;
   }
-  
-  /* Réduire encore plus la hauteur des images */
   .battle-images-container {
-    height: 120px !important;
+    height: 160px !important;
   }
-  
-  /* Réduire les paddings des cartes */
   .v-card-title {
     font-size: 1.1rem !important;
     padding: 10px 12px !important;
-  }
-  
+  }  
   .v-card-subtitle {
     font-size: 0.9rem !important;
     padding: 6px 12px !important;
-  }
-  
+  }  
   .v-card-text {
     padding: 6px 12px 10px 12px !important;
-  }
-  
+  }  
   .chip-container {
     flex-wrap: nowrap;
     gap: 2px;
     justify-content: flex-start;
-  }
-  
+  } 
   .points-chip {
     font-size: 10px !important;
     height: 24px !important;
@@ -533,8 +470,7 @@ function deleteReport(id) {
     flex: none !important;
     padding: 0 2px !important;
     border-radius: 12px !important;
-  }
-  
+  } 
   .points-chip .v-chip__content {
     font-size: 10px !important;
     line-height: 24px !important;
@@ -546,47 +482,36 @@ function deleteReport(id) {
     margin-top: 130px;
     min-height: calc(100vh - 130px);
     padding: 5px;
-  }
-  
+  }  
   .background {
     padding: 5px;
   }
-  
-  /* Seulement les cartes de bataille, pas les filtres */
   .v-row:last-child {
     max-width: 380px;
     margin-left: auto;
     margin-right: auto;
   }
-  
-  /* Hauteur très compacte pour mobile */
   .battle-images-container {
-    height: 80px !important;
+    height: 140px !important;
   }
-  
-  /* Cartes très compactes */
   .v-card-title {
     font-size: 0.95rem !important;
     padding: 6px 8px !important;
     line-height: 1.2 !important;
-  }
-  
+  }  
   .v-card-subtitle {
     font-size: 0.8rem !important;
     padding: 3px 8px !important;
     line-height: 1.1 !important;
-  }
-  
+  } 
   .v-card-text {
     padding: 3px 8px 6px 8px !important;
     font-size: 0.85rem !important;
-  }
-  
+  }  
   .chip-container {
     gap: 1px !important;
     justify-content: flex-start !important;
-  }
-  
+  } 
   .points-chip {
     font-size: 8px !important;
     height: 20px !important;
@@ -595,32 +520,27 @@ function deleteReport(id) {
     flex: none !important;
     padding: 0 1px !important;
     border-radius: 10px !important;
-  }
-  
+  }  
   .points-chip .v-chip__content {
     font-size: 8px !important;
     line-height: 20px !important;
     padding: 0 !important;
   }
 }
-
 .card-container {
   border-radius: 15px;
   background-color: #332018;
   color: #EBDEC2;
 }
-
 .filter-title {
   cursor: pointer;
   display: flex;
   align-items: center;
   padding: 16px 20px !important;
 }
-
 .filter-toggle-btn {
   display: none;
 }
-
 .filter-content {
   transition: all 0.3s ease-in-out;
 }
@@ -628,25 +548,21 @@ function deleteReport(id) {
 @media (max-width: 960px) {
   .filter-title {
     user-select: none;
-  }
-  
+  }  
   .filter-toggle-btn {
     display: inline-flex !important;
-  }
-  
+  }  
   .filter-content {
     overflow: hidden;
-  }
-  
-  /* Styles spéciaux pour les chips sur mobile - mais seulement au-dessus de 600px */
+  }  
+
   @media (min-width: 601px) {
     .points-chip {
       border-radius: 16px !important;
       font-weight: 500 !important;
       line-height: 1 !important;
       letter-spacing: 0.5px !important;
-    }
-    
+    }    
     .points-chip .v-chip__content {
       padding: 0 !important;
       display: flex !important;
@@ -662,7 +578,6 @@ function deleteReport(id) {
   background-color: #332018;
   color: #EBDEC2;
 }
-
 .battle-card {
   position: relative;
   cursor: pointer;
@@ -672,7 +587,6 @@ function deleteReport(id) {
   transform: scale(1.02);
   image-rendering: auto;
 }
-
 .action-buttons {
   position: absolute;
   top: 8px;
@@ -681,11 +595,9 @@ function deleteReport(id) {
   gap: 4px;
   z-index: 2;
 }
-
 .battle-card:hover .action-buttons {
   display: flex;
 }
-
 .battle-image {
   flex: 1;
   background-size: cover;
@@ -697,18 +609,15 @@ function deleteReport(id) {
   backface-visibility: hidden;
   will-change: transform;
 }
-
 .battle-image.full {
   width: 100%;
 }
-
 .battle-image.alliance-group {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   width: 100%;
 }
-
 .player-image {
   flex: 1;
   height: 100%;
@@ -716,18 +625,15 @@ function deleteReport(id) {
   background-position: center;
   margin: 0 2px;
 }
-
 .battle-image.single-army {
   flex: 2;
 }
 
-/* Hauteur par défaut pour les grands écrans */
 @media (min-width: 769px) {
   .battle-images-container {
     height: 200px;
   }
 }
-
 .battle-images-container {
   position: relative;
   width: 100%;
@@ -736,15 +642,12 @@ function deleteReport(id) {
   overflow: hidden;
   border-radius: 10px 10px 0 0;
 }
-
-
 .center-divider {
   width: 8px;
   background-color: #EBDEC2;
   height: 100%;
   z-index: 2;
 }
-
 .vs-icon {
   display: flex;
   justify-content: center;
@@ -753,23 +656,19 @@ function deleteReport(id) {
   padding-bottom: 4px;
   color: #EBDEC2;
 }
-
 .battle-title {
   font-weight: bold;
   font-size: 1.1rem;
 }
-
 .battle-details {
   font-size: 0.9rem;
   opacity: 0.8;
 }
-
 .button-container {
   display: flex;
   justify-content: center;
   margin-bottom: 20px;
 }
-
 .reset-button {
   display: block;
   margin-top: 10px;
@@ -777,12 +676,10 @@ function deleteReport(id) {
   border: 1px solid #EBDEC2;
   background-color: #EBDEC2;
 }
-
 .reset-button:hover {
   background-color: #EBDEC2;
   color: #332018;
 }
-
 .chip-container {
   display: flex;
   justify-content: space-between;
@@ -790,7 +687,6 @@ function deleteReport(id) {
   margin-top: 8px;
 }
 
-/* Styles par défaut pour les chips de points - écrans larges uniquement */
 @media (min-width: 960px) {
   .points-chip {
     flex: 1;
@@ -804,8 +700,6 @@ function deleteReport(id) {
     padding: 0 14px !important;
   }
 }
-
-/* Styles de base pour les chips (toutes tailles) */
 .points-chip {
   display: flex !important;
   align-items: center !important;
@@ -813,7 +707,6 @@ function deleteReport(id) {
   text-align: center !important;
 }
 
-/* Responsive pour les chips de points */
 @media (min-width: 1351px) {
   .points-chip {
     flex: none !important;
@@ -822,15 +715,13 @@ function deleteReport(id) {
     font-size: 12px !important;
     height: 28px !important;
     padding: 0 4px !important;
-  }
-  
+  }  
   .chip-container {
     gap: 3px;
     justify-content: flex-start;
   }
 }
 
-/* Responsive pour les chips de points */
 @media (max-width: 1350px) {
   .points-chip {
     font-size: 12px !important;
@@ -839,8 +730,7 @@ function deleteReport(id) {
     max-width: 50px !important;
     flex: none !important;
     padding: 0 4px !important;
-  }
-  
+  }  
   .chip-container {
     gap: 3px;
     justify-content: flex-start;
@@ -855,8 +745,7 @@ function deleteReport(id) {
     max-width: 43px !important;
     flex: none !important;
     padding: 0 3px !important;
-  }
-  
+  }  
   .chip-container {
     gap: 2px;
     justify-content: flex-start;
@@ -871,8 +760,7 @@ function deleteReport(id) {
     max-width: 40px !important;
     flex: none !important;
     padding: 0 2px !important;
-  }
-  
+  }  
   .chip-container {
     gap: 1px;
     justify-content: flex-start;
@@ -887,15 +775,13 @@ function deleteReport(id) {
     max-width: 42px !important;
     flex: none !important;
     padding: 0 3px !important;
-  }
-  
+  }  
   .chip-container {
     gap: 2px;
     justify-content: flex-start;
   }
 }
 
-/* Styles spécifiques pour mobile - 959px et moins */
 @media (max-width: 959px) {
   .points-chip {
     font-size: 16px !important;
@@ -905,26 +791,23 @@ function deleteReport(id) {
     flex: none !important;
     padding: 0 8px !important;
     border-radius: 18px !important;
-  }
-  
+  }  
   .points-chip .v-chip__content {
     font-size: 16px !important;
     line-height: 36px !important;
-  }
-  
+  } 
   .chip-container {
     gap: 8px;
     justify-content: flex-start;
   }
 }
 
-/* Styles spécifiques pour très petits écrans - 480px et moins - PRIORITÉ MAXIMALE */
+
 @media (max-width: 480px) {
   .chip-container {
     gap: 3px !important;
     justify-content: flex-start !important;
-  }
-  
+  }  
   .points-chip {
     font-size: 12px !important;
     height: 28px !important;
@@ -933,8 +816,7 @@ function deleteReport(id) {
     flex: none !important;
     padding: 0 3px !important;
     border-radius: 14px !important;
-  }
-  
+  }  
   .points-chip .v-chip__content {
     font-size: 12px !important;
     line-height: 28px !important;

@@ -200,7 +200,6 @@ const authStore = useAuthStore();
 
 const reports = ref([]);
 const NoAlliance = 4;
-const reportsPerPage = 6;
 const currentPage = ref(0);
 
 reports.value = [];
@@ -208,21 +207,6 @@ reports.value = [];
 const chunkedReports = computed(() => {
   return _.chunk(reports.value, 3);
 });
-
-const totalPages = computed(() => Math.ceil(reports.value.length / reportsPerPage));
-
-const pagedReports = computed(() => {
-  const start = (currentPage.value - 1) * reportsPerPage;
-  return reports.value.slice(start, start + reportsPerPage);
-});
-
-function prevPage() {
-  currentPage.value = currentPage.value > 1 ? currentPage.value - 1 : totalPages.value;
-}
-
-function nextPage() {
-  currentPage.value = currentPage.value < totalPages.value ? currentPage.value + 1 : 1;
-}
 
 function groupedByAlliance(players) {
   if (!Array.isArray(players)) return [];

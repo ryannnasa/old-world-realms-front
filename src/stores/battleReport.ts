@@ -95,8 +95,10 @@ export const useBattleReportStore = defineStore('battleReport', {
         return Promise.resolve([]);
       }
 
-      const formData = new FormData();
-      files.forEach(file => formData.append('fileBattleReportPhoto', file));
+      const formData = files.reduce((fd, file) => {
+        fd.append('fileBattleReportPhoto', file);
+        return fd;
+      }, new FormData());
 
       return fetch(`http://localhost:8080/battlereport/${battleReportId}/photos`, {
         method: 'POST',
@@ -139,7 +141,7 @@ export const useBattleReportStore = defineStore('battleReport', {
           return res.json();
         })
         .then(data => {
-          this.battleReports.push(data);
+          this.battleReports = [...this.battleReports, data];
           localStorage.setItem('battleReportSuccess', 'created');
           this.battleReportSuccess = true;
           return data;
@@ -163,8 +165,9 @@ export const useBattleReportStore = defineStore('battleReport', {
           return res.json();
         })
         .then(data => {
-          const index = this.battleReports.findIndex(r => r.idBattleReport === data.idBattleReport);
-          if (index !== -1) this.battleReports[index] = data;
+          this.battleReports = this.battleReports.map(r => 
+            r.idBattleReport === data.idBattleReport ? data : r
+          );
           
           if (this.battleReport?.idBattleReport === data.idBattleReport) {
             this.battleReport = data;
@@ -216,5 +219,83 @@ export const useBattleReportStore = defineStore('battleReport', {
       this.battleReportSuccess = false;
       this.battleReportAction = null;
     },
+
+    async getPhotoUrl(filename: string): Promise<string> {
+      try {
+        const response = await fetch(`http://localhost:8080/image-url/${filename}`);
+        if (!response.ok) throw new Error('Erreur lors de la récupération du lien signé');
+        return await response.text();
+      } catch (err) {
+        console.error('Erreur pour getPhotoUrl:', err);
+        return '/img/erreur.jpg'; // image fallback si erreur
+      }
+    },
+
+    async fetchBattlePhotos(idBattleReport: number): Promise<string[]> {
+      try {
+        const response = await fetch(`http://localhost:8080/battlereport/${idBattleReport}/photos`);
+        if (!response.ok) {
+          throw new Error('Erreur réseau');
+        }
+        const data = await response.json();
+        const urls = await Promise.all(data.map((photo: any) => this.getPhotoUrl(photo.nameBattleReportPhoto)));
+        return urls;
+      } catch (error) {
+        console.error('Erreur lors de la récupération des photos :', error);
+        return [];
+      }
+    },
   },
 });
+
+// Fonctions utilitaires pour éviter la duplication dans les composants
+export const battleReportUtils = {
+  getArmyName(armyNameStore: any, armyId: number): string {
+    const army = armyNameStore.armyName.find((a: any) => a.idArmyName === armyId);
+    return army ? army.nameArmyName : 'Inconnu';
+  },
+
+  getArmyImageUrl(armyPhotoStore: any, armyId: number): string {
+    const photo = armyPhotoStore.armyPhoto.find((p: any) => p.armyName_idArmyName === armyId);
+    return photo ? `/img/armees/${photo.photoArmyName}` : '/img/armees/default.jpg';
+  },
+
+  getAllianceName(allianceStore: any, allianceId: number): string {
+    const alliance = allianceStore.alliance.find((a: any) => a.idAlliance === allianceId);
+    return alliance ? alliance.allianceName : 'Aucune';
+  },
+
+  getScenarioName(scenarioStore: any, scenarioId: number): string {
+    const scenario = scenarioStore.scenario.find((s: any) => s.idScenario === scenarioId);
+    return scenario ? scenario.scenarioName : 'Inconnu';
+  },
+
+  groupedByAlliance(players: any[], NoAlliance: number = 4): any[][] {
+    if (!Array.isArray(players)) return [];
+
+    const groups: any[][] = [];
+    const processedPlayers = new Set();
+
+    for (const player of players) {
+      if (processedPlayers.has(player.name)) continue;
+
+      // Si le joueur n'a pas d'alliance ou est dans NoAlliance, il forme son propre groupe
+      if (!player.allianceId || player.allianceId === NoAlliance) {
+        groups.push([player]);
+        processedPlayers.add(player.name);
+      } else {
+        // Trouver tous les joueurs de la même alliance
+        const allianceGroup = players.filter((p: any) => 
+          p.allianceId === player.allianceId && !processedPlayers.has(p.name)
+        );
+        
+        if (allianceGroup.length > 0) {
+          groups.push(allianceGroup);
+          allianceGroup.forEach((p: any) => processedPlayers.add(p.name));
+        }
+      }
+    }
+
+    return groups;
+  },
+};

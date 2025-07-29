@@ -5,6 +5,8 @@ import BattleReportView from '@/views/BattleReportView.vue'
 import HomePage from '@/views/HomePage.vue'
 import MyAccount from '@/views/MyAccount.vue'
 import Contact from '@/views/Contact.vue'
+import { useAuthStore } from '@/stores/auth'
+import Confidentiality from '@/views/Confidentiality.vue'
 
 const routes = [
   {
@@ -49,12 +51,12 @@ const routes = [
   {
     path: '/contact',
     name: 'Contact',
-    component: () => import('@/views/Contact.vue')
+    component: Contact
   },
   {
     path: '/confidentialite',
     name: 'Confidentialité',
-    component: () => import('@/views/Confidentiality.vue')
+    component: Confidentiality
   },
 
   {
@@ -79,6 +81,30 @@ const router = createRouter({
     }
     // Sinon, toujours aller en haut de la page
     return { top: 0 }
+  }
+})
+
+// Guard de navigation simple
+router.beforeEach((to, from, next) => {
+  const authStore = useAuthStore()
+  
+  // Si l'utilisateur est connecté et va à la racine, rediriger vers homepage
+  if (authStore.isLoggedIn && (to.path === '/' || to.path === '')) {
+    next('/homepage')
+    return
+  }
+  
+  next()
+})
+
+// Nettoyer les éventuels flags après navigation
+router.afterEach((to, from) => {
+  const authStore = useAuthStore()
+  
+  // Si l'utilisateur n'est plus connecté, nettoyer tous les flags
+  if (!authStore.isLoggedIn) {
+    sessionStorage.removeItem('justLoggedIn')
+    sessionStorage.removeItem('redirectInProgress')
   }
 })
 

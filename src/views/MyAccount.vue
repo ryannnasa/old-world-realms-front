@@ -130,7 +130,7 @@ const performSave = () => {
     username: form.value.username
   };
 
-  profileStore.updateProfile(updated)
+  authStore.updateProfile(updated)
     .then(() => {
       showSnackbar('Compte mis à jour.');
       isEditing.value = false;

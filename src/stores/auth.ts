@@ -18,27 +18,39 @@ export const useAuthStore = defineStore('auth', {
     profile: null as Profile | null,
   }),
   actions: {
-    async init() {
+    init() {
       this.keycloak = new Keycloak(keycloakConfig)
-      const authenticated = await this.keycloak.init({ onLoad: 'login-required' })
-      this.authenticated = authenticated
+      
+      return this.keycloak.init({ 
+        onLoad: 'login-required',
+        // Forcer la redirection vers la homepage après connexion
+        redirectUri: window.location.origin + '/homepage'
+      })
+        .then(authenticated => {
+          this.authenticated = authenticated
 
-      if (authenticated) {
-        const keycloakProfile = await this.keycloak.loadUserProfile()
-        this.profile = {
-          email: keycloakProfile.email ?? '',
-          emailVerified: false,  // adapter si tu as l'info
-          firstName: keycloakProfile.firstName ?? '',
-          id: keycloakProfile.id ?? '',
-          lastName: keycloakProfile.lastName ?? '',
-          username: keycloakProfile.username ?? '',
-        }
-      } else {
-        this.profile = null
-      }
+          if (authenticated && this.keycloak) {
+            return this.keycloak.loadUserProfile()
+              .then(keycloakProfile => {
+                this.profile = {
+                  email: keycloakProfile.email ?? '',
+                  emailVerified: false,  // adapter si tu as l'info
+                  firstName: keycloakProfile.firstName ?? '',
+                  id: keycloakProfile.id ?? '',
+                  lastName: keycloakProfile.lastName ?? '',
+                  username: keycloakProfile.username ?? '',
+                }
+              })
+          } else {
+            this.profile = null
+          }
+        })
     },
     login() {
-      this.keycloak?.login()
+      // Rediriger vers homepage après connexion
+      this.keycloak?.login({
+        redirectUri: window.location.origin + '/homepage'
+      })
     },
     logout() {
       this.keycloak?.logout()
