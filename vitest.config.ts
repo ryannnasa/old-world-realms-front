@@ -9,9 +9,9 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./tests/setup.ts'],
-    css: false, // Désactive le traitement CSS pour les tests
+    css: false,
     deps: {
-      inline: ['vuetify'] // Force Vuetify à être traité en inline
+      inline: ['vuetify']
     }
   },
   resolve: {

@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 
-// Import direct pour éviter les problèmes d'alias
 import { useBattleReportStore, battleReportUtils } from '../../src/stores/battleReport';
 
 describe('BattleReport Store - Tests unitaires', () => {
@@ -12,10 +11,8 @@ describe('BattleReport Store - Tests unitaires', () => {
     store = useBattleReportStore();
     vi.clearAllMocks();
     
-    // Mock fetch
     global.fetch = vi.fn();
     
-    // Mock localStorage
     const mockLocalStorage = {
       setItem: vi.fn(),
       getItem: vi.fn(),
@@ -118,7 +115,6 @@ describe('BattleReport Store - Tests unitaires', () => {
 
   describe('deleteBattleReport', () => {
     it('devrait supprimer un battle report et mettre à jour le state', () => {
-      // Préparer le state avec des données
       store.battleReports = [
         { idBattleReport: 1, nameBattleReport: 'Battle 1' },
         { idBattleReport: 2, nameBattleReport: 'Battle 2' }
@@ -227,8 +223,7 @@ describe('BattleReport Utils', () => {
       const result = battleReportUtils.groupedByAlliance(mockPlayers);
       
       expect(result).toHaveLength(4);
-      
-      // Vérifier que les joueurs de l'alliance 1 sont regroupés
+
       const alliance1Group = result.find(group => 
         group.some(player => player.allianceId === 1)
       );

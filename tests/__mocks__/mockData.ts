@@ -1,4 +1,3 @@
-// Mock pour les stores Pinia
 export const mockStores = {
   armyName: [
     { idArmyName: 1, nameArmyName: 'Empire' },
@@ -23,7 +22,6 @@ export const mockStores = {
   ]
 };
 
-// Mock data pour les battle reports
 export const mockBattleReports = [
   {
     idBattleReport: 1,
@@ -62,7 +60,6 @@ export const mockBattleReports = [
   }
 ];
 
-// Mock players pour tester le groupement par alliance
 export const mockPlayers = [
   { name: 'Player1', allianceId: 1, army: 'Empire' },
   { name: 'Player2', allianceId: 2, army: 'Orcs' },

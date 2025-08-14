@@ -67,7 +67,6 @@ const mockBattleReports = [
   }
 ];
 
-// Stubs Vuetify pour les tests
 const vuetifyStubs = {
   'router-link': {
     template: '<a><slot /></a>',
@@ -83,7 +82,6 @@ const vuetifyStubs = {
     template: '<button class="v-btn button" @click="handleClick"><slot /></button>',
     methods: {
       handleClick(event) {
-        // Mock simple du click sans stopPropagation
         this.$emit('click');
       }
     }
@@ -143,7 +141,7 @@ describe('BattleReportCards.vue', () => {
     });
 
     it('devrait créer les liens router-link corrects', () => {
-      const routerLinks = wrapper.findAll('a'); // Chercher les éléments <a> générés par les stubs
+      const routerLinks = wrapper.findAll('a');
       expect(routerLinks).toHaveLength(mockBattleReports.length);
     });
   });
@@ -174,7 +172,6 @@ describe('BattleReportCards.vue', () => {
 
     it('devrait calculer le bon nombre de chunks', () => {
       const component = wrapper.vm;
-      // Avec 3 rapports et itemsPerPage = 2, on devrait avoir 2 chunks
       expect(component.chunkedReports).toHaveLength(2);
       expect(component.chunkedReports[0]).toHaveLength(2);
       expect(component.chunkedReports[1]).toHaveLength(1);
@@ -272,7 +269,6 @@ describe('BattleReportCards.vue', () => {
         }
       });
 
-      // Devrait utiliser l'image générique pour les batailles avec plus de 4 joueurs
       const fullImage = wrapper.find('.battle-image.full');
       expect(fullImage.exists()).toBe(true);
     });
@@ -282,7 +278,7 @@ describe('BattleReportCards.vue', () => {
         ...mockBattleReports[0],
         players: [{
           ...mockPlayers[0],
-          armyImage: '' // Image manquante
+          armyImage: ''
         }],
         groupedAlliances: [[{
           ...mockPlayers[0],
