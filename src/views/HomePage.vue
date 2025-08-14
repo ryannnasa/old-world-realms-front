@@ -82,72 +82,12 @@
       <p class="text-body-1 text-center mb-6">
         Redécouvrez les derniers récits de batailles que vous avez vécu.
       </p>
-      <div class="carousel-wrapper d-flex justify-center align-center mb-4">
-        <div class="carousel-container">
-          <v-window v-model="currentPage" show-arrows continuous>
-
-            <v-window-item
-              v-for="(chunk, index) in chunkedReports"
-              :key="index"
-              :value="index"
-            >
-              <div class="d-flex">
-                <div
-                  v-for="report in chunk"
-                  :key="report.id"
-                  class="carousel-item"
-                >
-                  <v-card class="card-container battle-card" hover>
-                    <router-link :to="`/battlereportview/${report.id}`" style="text-decoration: none; color: inherit;">
-                      <div class="battle-images-container">
-                        <template v-if="report.players.length > 4">
-                          <div class="battle-image full" :style="{ backgroundImage: 'url(/img/armees/tow-battle.png)' }"></div>
-                        </template>
-                        <template v-else>
-                          <div
-                            v-for="(alliance, index) in groupedByAlliance(report.players)"
-                            :key="index"
-                            class="battle-image alliance-group"
-                            :style="{ width: 100 / groupedByAlliance(report.players).length + '%' }"
-                          >
-                            <div
-                              v-for="player in alliance"
-                              :key="player.name"
-                              class="player-image"
-                              :title="player.army"
-                              :style="{ backgroundImage: `url('${player.armyImage}')` }"
-                            ></div>
-                          </div>
-                        </template>
-                      </div>
-
-                      <v-card-title class="mt-2 battle-title">{{ report.title }}</v-card-title>
-
-                      <v-card-subtitle class="d-flex align-center justify-center flex-wrap text-center battle-subtitle">
-                        <template v-for="(alliance, index) in groupedByAlliance(report.players)" :key="index">
-                          <span class="mx-1 font-weight-medium">
-                            {{ alliance.map(player => player.name).join(' / ') }}
-                          </span>
-                          <v-icon
-                            v-if="index < groupedByAlliance(report.players).length - 1"
-                            class="mx-2"
-                            color="grey"
-                          >
-                            mdi-sword-cross
-                          </v-icon>
-                        </template>
-                      </v-card-subtitle>
-
-                      <v-card-text class="battle-points">{{ report.points }} points</v-card-text>
-                    </router-link>
-                  </v-card>
-                </div>
-              </div>
-            </v-window-item>
-          </v-window>
-        </div>
-
-      </div>
+      <BattleReportCards 
+        :reports="reports" 
+        display-mode="carousel"
+        :show-actions="false"
+        :items-per-page="3"
+      />
     </v-container>
   </div>
     <v-divider class="my-0" thickness="6" color="amber darken-3" />
@@ -180,15 +120,15 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { useBattleReportStore } from '@/stores/battleReport';
+import { useBattleReportStore, battleReportUtils } from '@/stores/battleReport';
 import { useArmyPhotoStore } from '@/stores/armyPhoto';
 import { useArmyNameStore } from '@/stores/armyName';
 import { useAllianceStore } from '@/stores/alliance';
 import { useScenarioStore } from '@/stores/scenario';
 import { useAuthStore } from '@/stores/auth';
-import _ from 'lodash';
+import BattleReportCards from '@/components/BattleReportCards.vue';
 
 const router = useRouter();
 const battleReportStore = useBattleReportStore();
@@ -200,52 +140,7 @@ const authStore = useAuthStore();
 
 const reports = ref([]);
 const NoAlliance = 4;
-const currentPage = ref(0);
 
-reports.value = [];
-
-const chunkedReports = computed(() => {
-  return _.chunk(reports.value, 3);
-});
-
-function groupedByAlliance(players) {
-  if (!Array.isArray(players)) return [];
-  const groupedObj = _.groupBy(players, player => {
-    if (!player.allianceId || player.allianceId === NoAlliance) {
-      return `no-alliance-${player.name}`;
-    }
-    return player.allianceId;
-  });
-
-  const firstPlayer = players[0];
-  const firstGroupKey = (!firstPlayer.allianceId || firstPlayer.allianceId === NoAlliance)
-    ? `no-alliance-${firstPlayer.name}`
-    : firstPlayer.allianceId;
-  const firstGroup = groupedObj[firstGroupKey] ?? [];
-  const otherGroups = _.omit(groupedObj, firstGroupKey);
-  return [firstGroup, ...Object.values(otherGroups)];
-}
-
-
-function getArmyImageUrl(armyId) {
-  const photo = armyPhotoStore.armyPhoto.find(p => p.armyName_idArmyName === armyId);
-  return photo ? `/img/armees/${photo.photoArmyName}` : '/img/armees/tow-battle.png';
-}
-
-function getArmyName(armyId) {
-  const army = armyNameStore.armyName.find(a => a.idArmyName === armyId);
-  return army ? army.nameArmyName : 'Inconnu';
-}
-
-function getAllianceName(allianceId) {
-  const alliance = allianceStore.alliance.find(a => a.idAlliance === allianceId);
-  return alliance ? alliance.nameAlliance : 'Aucune';
-}
-
-function getScenarioName(scenarioId) {
-  const scenario = scenarioStore.scenario.find(s => s.idScenario === scenarioId);
-  return scenario ? scenario.scenarioName : 'Inconnu';
-}
 
 function fetchReports() {
   return armyPhotoStore.getArmyPhoto()
@@ -257,21 +152,24 @@ function fetchReports() {
         const players = report.players?.map(p => ({
           name: p.playerName,
           allianceId: p.alliance_idAlliance,
-          alliance: getAllianceName(p.alliance_idAlliance),
-          army: getArmyName(p.armyName_idArmyName),
-          armyImage: getArmyImageUrl(p.armyName_idArmyName),
+          alliance: battleReportUtils.getAllianceName(allianceStore, p.alliance_idAlliance),
+          army: battleReportUtils.getArmyName(armyNameStore, p.armyName_idArmyName),
+          armyImage: battleReportUtils.getArmyImageUrl(armyPhotoStore, p.armyName_idArmyName),
           score: p.playerScore
         })) ?? [];
+
+        const groupedAlliances = battleReportUtils.groupedByAlliance(players, NoAlliance);
 
         return {
           id: report.idBattleReport,
           title: report.nameBattleReport,
           description: report.descriptionBattleReport,
-          scenario: getScenarioName(report.scenario_idScenario),
+          scenario: battleReportUtils.getScenarioName(scenarioStore, report.scenario_idScenario),
           points: Number(report.armyPoints),
           faction: players[0]?.army || '',
           opponent: players[1]?.army || '',
-          players
+          players,
+          groupedAlliances
         };
       });
     })
@@ -334,118 +232,6 @@ onMounted(() => {
 <style scoped>
 .text-justify {
   text-align: justify;
-}
-
-.card-container {
-  border-radius: 15px;
-  background-color: #332018;
-  color: #EBDEC2;
-}
-
-.battle-card {
-  position: relative;
-  cursor: pointer;
-  transition: transform 0.2s ease-in-out;
-}
-
-.battle-card:hover {
-  transform: scale(1.02);
-  image-rendering: auto;
-}
-
-.battle-images-container {
-  position: relative;
-  width: 100%;
-  height: 200px;
-  display: flex;
-  justify-content: space-between;
-  overflow: hidden;
-  border-radius: 10px 10px 0 0;
-}
-
-.battle-image {
-  flex: 1;
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-position: center center;
-  height: 100%;
-  image-rendering: auto;
-  transform: translateZ(0);
-  backface-visibility: hidden;
-  will-change: transform;
-}
-
-.battle-image.full {
-  width: 100%;
-}
-
-.battle-image.alliance-group {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  width: 100%;
-}
-
-.player-image {
-  flex: 1;
-  height: 100%;
-  background-size: cover;
-  background-position: center;
-  margin: 0 2px;
-}
-
-.vs-icon {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding-top: 8px;
-  padding-bottom: 4px;
-  color: #EBDEC2;
-}
-
-.battle-title {
-  font-weight: bold;
-  font-size: 1.1rem;
-}
-
-.battle-details {
-  font-size: 0.9rem;
-  opacity: 0.8;
-}
-
-.carousel-wrapper {
-  gap: 16px;
-}
-
-.carousel-container {
-  width: 100%;
-  overflow: hidden;
-  max-width: 1200px;
-}
-
-.carousel-inner {
-  display: flex;
-  transition: transform 0.5s ease-in-out;
-  width: 100%;
-}
-
-.carousel-item {
-  flex: 0 0 calc(100% / 3);
-  padding: 8px;
-}
-
-.slide-enter-active, .slide-leave-active {
-  transition: all 0.5s ease;
-}
-
-.slide-enter-from {
-  opacity: 0;
-  transform: translateX(100%);
-}
-
-.slide-leave-to {
-  opacity: 0;
-  transform: translateX(-100%);
 }
 
 .v-btn {
@@ -574,10 +360,6 @@ onMounted(() => {
   .presentation-image {
     height: 350px;
   }
-  
-  .carousel-item {
-    flex: 0 0 calc(100% / 2);
-  }
 }
 
 @media (max-width: 960px) {
@@ -615,27 +397,6 @@ onMounted(() => {
     height: 50vh !important;
   }
   
-  .carousel-item {
-    flex: 0 0 100%;
-    padding: 4px;
-  }
-  
-  .battle-images-container {
-    height: 150px;
-  }
-  
-  .battle-title {
-    font-size: 1rem;
-  }
-  
-  .battle-subtitle {
-    font-size: 0.85rem;
-  }
-  
-  .battle-points {
-    font-size: 0.9rem;
-  }
-  
   .presentation-image {
     height: 250px;
   }
@@ -656,10 +417,6 @@ onMounted(() => {
   
   .presentation-image {
     height: 200px;
-  }
-  
-  .carousel-container {
-    max-width: 100%;
   }
   
   .news-section {
@@ -690,25 +447,6 @@ onMounted(() => {
   
   .text-body-1 {
     font-size: 0.95rem;
-  }
-  
-  .battle-images-container {
-    height: 120px;
-  }
-  
-  .battle-title {
-    font-size: 0.9rem;
-    padding: 8px 12px;
-  }
-  
-  .battle-subtitle {
-    font-size: 0.8rem;
-    padding: 4px 12px;
-  }
-  
-  .battle-points {
-    font-size: 0.85rem;
-    padding: 4px 12px 12px;
   }
   
   .presentation-image {

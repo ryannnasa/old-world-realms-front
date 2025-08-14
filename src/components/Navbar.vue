@@ -284,12 +284,12 @@ onUnmounted(() => {
 @media (max-width: 600px) {
   .my-app-bar {
     max-width: 98%;
-    margin-top: 4px;
+    margin-top: 40px;
     height: 60px;
   }
   
   .mobile-menu-external {
-    top: 64px !important;
+    top: 100px !important;
     max-width: 98% !important;
     width: 98% !important;
   }
@@ -303,15 +303,26 @@ onUnmounted(() => {
   .my-app-bar {
     border-radius: 12px;
     height: 56px;
+    margin-top: 45px;
   }
   
   .mobile-menu-external {
-    top: 60px !important;
+    top: 101px !important;
     border-radius: 0 0 12px 12px !important;
   }
   
   .logo {
     height: 45px;
+  }
+}
+
+@media (max-width: 430px) and (min-height: 800px) {
+  .my-app-bar {
+    margin-top: 50px;
+  }
+  
+  .mobile-menu-external {
+    top: 106px !important;
   }
 }
 </style>
