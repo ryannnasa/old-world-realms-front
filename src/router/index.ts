@@ -75,20 +75,16 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes,
   scrollBehavior(to, from, savedPosition) {
-    // Si l'utilisateur utilise le bouton retour/suivant du navigateur
     if (savedPosition) {
       return savedPosition
     }
-    // Sinon, toujours aller en haut de la page
     return { top: 0 }
   }
 })
 
-// Guard de navigation simple
 router.beforeEach((to, from, next) => {
   const authStore = useAuthStore()
   
-  // Si l'utilisateur est connecté et va à la racine, rediriger vers homepage
   if (authStore.isLoggedIn && (to.path === '/' || to.path === '')) {
     next('/homepage')
     return
@@ -97,11 +93,9 @@ router.beforeEach((to, from, next) => {
   next()
 })
 
-// Nettoyer les éventuels flags après navigation
 router.afterEach((to, from) => {
   const authStore = useAuthStore()
   
-  // Si l'utilisateur n'est plus connecté, nettoyer tous les flags
   if (!authStore.isLoggedIn) {
     sessionStorage.removeItem('justLoggedIn')
     sessionStorage.removeItem('redirectInProgress')

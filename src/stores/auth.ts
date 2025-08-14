@@ -23,7 +23,6 @@ export const useAuthStore = defineStore('auth', {
       
       return this.keycloak.init({ 
         onLoad: 'login-required',
-        // Forcer la redirection vers la homepage après connexion
         redirectUri: window.location.origin + '/homepage'
       })
         .then(authenticated => {
@@ -34,7 +33,7 @@ export const useAuthStore = defineStore('auth', {
               .then(keycloakProfile => {
                 this.profile = {
                   email: keycloakProfile.email ?? '',
-                  emailVerified: false,  // adapter si tu as l'info
+                  emailVerified: false,
                   firstName: keycloakProfile.firstName ?? '',
                   id: keycloakProfile.id ?? '',
                   lastName: keycloakProfile.lastName ?? '',
@@ -47,7 +46,6 @@ export const useAuthStore = defineStore('auth', {
         })
     },
     login() {
-      // Rediriger vers homepage après connexion
       this.keycloak?.login({
         redirectUri: window.location.origin + '/homepage'
       })

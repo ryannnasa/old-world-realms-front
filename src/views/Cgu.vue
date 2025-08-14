@@ -1,7 +1,6 @@
 <template>
   <div class="background page-container">
     <v-container class="d-flex justify-center align-center flex-column">
-      <!-- Titre principal -->
       <div class="text-center mb-8">
         <h1 class="text-h3 font-weight-bold mb-4" style="color: #332018;">
           Conditions Générales d'Utilisation
@@ -11,13 +10,11 @@
         </p>
       </div>
 
-      <!-- Contenu principal -->
       <v-row class="w-100" justify="center">
         <v-col cols="12" md="10" lg="8">
           <v-card class="card-container mb-6">
             <v-card-text class="pa-8">
               
-              <!-- Section 1: Objet -->
               <div class="cgu-section mb-6">
                 <h2 class="section-title mb-4">
                   <v-icon class="mr-2" color="#EBDEC2">mdi-target</v-icon>
@@ -36,7 +33,6 @@
                 </div>
               </div>
 
-              <!-- Section 2: Acceptation des conditions -->
               <div class="cgu-section mb-6">
                 <h2 class="section-title mb-4">
                   <v-icon class="mr-2" color="#EBDEC2">mdi-handshake-outline</v-icon>
@@ -55,7 +51,6 @@
                 </div>
               </div>
 
-              <!-- Section 3: Inscription et compte utilisateur -->
               <div class="cgu-section mb-6">
                 <h2 class="section-title mb-4">
                   <v-icon class="mr-2" color="#EBDEC2">mdi-account-plus-outline</v-icon>
@@ -80,7 +75,6 @@
                 </div>
               </div>
 
-              <!-- Section 4: Utilisation du service -->
               <div class="cgu-section mb-6">
                 <h2 class="section-title mb-4">
                   <v-icon class="mr-2" color="#EBDEC2">mdi-play-circle-outline</v-icon>
@@ -106,8 +100,6 @@
                   </ul>
                 </div>
               </div>
-
-              <!-- Section 5: Contenu utilisateur -->
               <div class="cgu-section mb-6">
                 <h2 class="section-title mb-4">
                   <v-icon class="mr-2" color="#EBDEC2">mdi-file-document-edit-outline</v-icon>
@@ -138,8 +130,6 @@
                   </p>
                 </div>
               </div>
-
-              <!-- Section 6: Modération -->
               <div class="cgu-section mb-6">
                 <h2 class="section-title mb-4">
                   <v-icon class="mr-2" color="#EBDEC2">mdi-shield-account-outline</v-icon>
@@ -162,8 +152,6 @@
                   </p>
                 </div>
               </div>
-
-              <!-- Section 7: Propriété intellectuelle -->
               <div class="cgu-section mb-6">
                 <h2 class="section-title mb-4">
                   <v-icon class="mr-2" color="#EBDEC2">mdi-copyright</v-icon>
@@ -189,8 +177,6 @@
                   </p>
                 </div>
               </div>
-
-              <!-- Section 8: Responsabilité -->
               <div class="cgu-section mb-6">
                 <h2 class="section-title mb-4">
                   <v-icon class="mr-2" color="#EBDEC2">mdi-shield-alert-outline</v-icon>
@@ -214,7 +200,6 @@
                 </div>
               </div>
 
-              <!-- Section 9: Modifications des CGU -->
               <div class="cgu-section mb-6">
                 <h2 class="section-title mb-4">
                   <v-icon class="mr-2" color="#EBDEC2">mdi-update</v-icon>
@@ -232,7 +217,6 @@
                 </div>
               </div>
 
-              <!-- Section 10: Résiliation -->
               <div class="cgu-section mb-4">
                 <h2 class="section-title mb-4">
                   <v-icon class="mr-2" color="#EBDEC2">mdi-account-remove-outline</v-icon>
@@ -253,7 +237,6 @@
                 </div>
               </div>
 
-              <!-- Contact -->
               <div class="contact-section text-center">
                 <v-divider class="my-6" color="#B8A082"></v-divider>
                 <h3 class="contact-title mb-3">Questions sur les CGU ?</h3>
@@ -278,7 +261,6 @@
 </template>
 
 <script setup>
-// Pas de logique JavaScript nécessaire pour cette page statique
 </script>
 
 <style scoped>
@@ -398,7 +380,6 @@
   box-shadow: 0 4px 12px rgba(184, 160, 130, 0.4);
 }
 
-/* Responsive */
 @media (max-width: 960px) {
   .page-container {
     padding-top: 20px;

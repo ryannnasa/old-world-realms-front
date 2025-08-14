@@ -76,7 +76,6 @@ export const useBattleReportStore = defineStore('battleReport', {
     },
 
     deleteBattleReport(id: number) {
-      // Suppression du rapport (les photos seront supprimées automatiquement côté serveur)
       return fetch(`http://localhost:8080/battlereport/${id}`, { method: 'DELETE' })
         .then(response => {
           if (!response.ok) throw new Error('Erreur lors de la suppression du rapport');
@@ -109,7 +108,6 @@ export const useBattleReportStore = defineStore('battleReport', {
           return res.json();
         })
         .then((fileNames: string[]) => {
-          // Mise à jour du rapport local si c'est le bon
           if (this.battleReport?.idBattleReport === battleReportId) {
             const newPhotos = fileNames.map(name => ({
               name,
@@ -192,7 +190,6 @@ export const useBattleReportStore = defineStore('battleReport', {
         .then(res => {
           if (!res.ok) throw new Error("Erreur lors de la suppression des photos");
           
-          // Mise à jour du state local
           if (this.battleReport?.idBattleReport === battleReportId) {
             this.battleReport.battleReportPhotos = 
               this.battleReport.battleReportPhotos?.filter(
@@ -227,7 +224,7 @@ export const useBattleReportStore = defineStore('battleReport', {
         return await response.text();
       } catch (err) {
         console.error('Erreur pour getPhotoUrl:', err);
-        return '/img/erreur.jpg'; // image fallback si erreur
+        return '/img/erreur.jpg';
       }
     },
 
@@ -248,7 +245,6 @@ export const useBattleReportStore = defineStore('battleReport', {
   },
 });
 
-// Fonctions utilitaires pour éviter la duplication dans les composants
 export const battleReportUtils = {
   getArmyName(armyNameStore: any, armyId: number): string {
     const army = armyNameStore.armyName.find((a: any) => a.idArmyName === armyId);
@@ -279,12 +275,10 @@ export const battleReportUtils = {
     for (const player of players) {
       if (processedPlayers.has(player.name)) continue;
 
-      // Si le joueur n'a pas d'alliance ou est dans NoAlliance, il forme son propre groupe
       if (!player.allianceId || player.allianceId === NoAlliance) {
         groups.push([player]);
         processedPlayers.add(player.name);
       } else {
-        // Trouver tous les joueurs de la même alliance
         const allianceGroup = players.filter((p: any) => 
           p.allianceId === player.allianceId && !processedPlayers.has(p.name)
         );

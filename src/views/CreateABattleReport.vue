@@ -2,7 +2,6 @@
   <div class="background page-container">
     <v-container>
 
-      <!-- Titre du rapport -->
       <v-card class="mb-4 card-container">
         <v-card-title>Titre du Rapport</v-card-title>
         <v-card-text>
@@ -10,7 +9,6 @@
         </v-card-text>
       </v-card>
 
-      <!-- Scénario et points -->
       <v-row>
         <v-col cols="12" md="6">
           <v-card class="mb-4 card-container">
@@ -38,7 +36,6 @@
         </v-col>
       </v-row>
 
-      <!-- Description -->
       <v-card class="mb-4 card-container">
         <v-card-title>Description de la bataille</v-card-title>
         <v-card-text>
@@ -51,12 +48,10 @@
             rows="3"
             max-rows="15"
           />
-          <!-- Photos -->
 <v-card class="mb-4 card-container">
   <v-card-title>Photos de la bataille</v-card-title>
   <v-card-text>
     <div class="photo-grid">
-      <!-- Photos existantes -->
       <div
         v-for="(photo, idx) in existingPhotos"
         :key="'existing-' + photo.name"
@@ -67,7 +62,6 @@
           <v-icon color="white">mdi-close</v-icon>
         </v-btn>
       </div>
-      <!-- Nouvelles photos -->
       <div
         v-for="(file, idx) in selectedFiles"
         :key="'new-' + file.name"
@@ -78,7 +72,6 @@
           <v-icon color="white">mdi-close</v-icon>
         </v-btn>
       </div>
-      <!-- Ajout -->
       <div v-if="existingPhotos.length + selectedFiles.length < 10" class="photo-add" @click="triggerFileInput">
         <v-icon size="36">mdi-plus</v-icon>
       </div>
@@ -101,12 +94,10 @@
         </v-card-text>
       </v-card>
 
-      <!-- Résultat du combat -->
 <v-card class="mb-4 card-container">
   <v-card-title>Résultat du combat</v-card-title>
   <v-card-text>
 
-    <!-- Paires de joueurs -->
     <v-row v-for="(pair, pairIndex) in playerPairs" :key="'pair-' + pairIndex" class="mb-6">
       <v-col
         v-for="(player, playerIndex) in pair"
@@ -115,7 +106,6 @@
         md="6"
         class="player-column"
       >
-        <!-- Nom du joueur 1 personnalisé -->
         <p class="text-h6">
           {{ player.id === 0 ? 'Votre Armée' : 'Joueur ' + getPlayerNumber(pairIndex, playerIndex) }}
         </p>
@@ -162,14 +152,12 @@
           class="input-field"
         />
 
-        <!-- Image dynamique -->
         <div
           v-if="player.army"
           class="battle-image"
           :style="{ backgroundImage: `url(${getArmyImageUrl(player.army)})` }"
         />
 
-        <!-- Bouton de suppression (pas pour joueur 1) -->
         <v-btn
           color="error"
           variant="outlined"
@@ -182,7 +170,6 @@
       </v-col>
     </v-row>
 
-    <!-- Bouton ajouter un joueur centré -->
     <div class="d-flex justify-center mt-4">
       <v-btn
         color="primary"
@@ -198,7 +185,6 @@
 </v-card>
 
 
-      <!-- Sauvegarde -->
       <div class="d-flex justify-center mt-4">
         <v-btn class="save-button" @click="saveBattleReport">Enregistrer le rapport</v-btn>
       </div>
@@ -272,7 +258,6 @@ const handleFileChange = (event) => {
   const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
   const availableSlots = maxPhotos - (existingPhotos.value.length + selectedFiles.value.length);
   
-  // Validation des fichiers avec filter et map
   const validationResults = newFiles.map(file => {
     if (!allowedTypes.includes(file.type)) {
       return { file: null, error: `${file.name}: Format non supporté. Utilisez JPG, PNG ou WebP.` };
@@ -293,7 +278,6 @@ const handleFileChange = (event) => {
   
   const filesToAdd = validFiles.slice(0, availableSlots);
   
-  // Traitement des fichiers avec Promise.all pour éviter les boucles
   const fileProcessingPromises = filesToAdd.map(file => {
     selectedFiles.value = [...selectedFiles.value, file];
     
@@ -593,9 +577,6 @@ watch(() => route.params.id, (newId, oldId) => {
   padding: 2px;
 }
 
-/* === RESPONSIVE DESIGN === */
-
-/* Breakpoint 1200px */
 @media (max-width: 1200px) {
   .page-container {
     margin-top: 90px;
@@ -613,7 +594,6 @@ watch(() => route.params.id, (newId, oldId) => {
   }
 }
 
-/* Breakpoint 959px */
 @media (max-width: 959px) {
   .page-container {
     margin-top: 100px;
@@ -631,7 +611,6 @@ watch(() => route.params.id, (newId, oldId) => {
   }
 }
 
-/* Breakpoint 768px */
 @media (max-width: 768px) {
   .page-container {
     margin-top: 110px;
@@ -711,7 +690,6 @@ watch(() => route.params.id, (newId, oldId) => {
   }
 }
 
-/* Breakpoint 600px */
 @media (max-width: 600px) {
   .page-container {
     margin-top: 120px;
@@ -729,7 +707,6 @@ watch(() => route.params.id, (newId, oldId) => {
   }
 }
 
-/* Breakpoint 480px */
 @media (max-width: 480px) {
   .page-container {
     margin-top: 130px;

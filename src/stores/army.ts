@@ -13,7 +13,7 @@ export const useArmyStore = defineStore('army', {
         }
         const data = await response.json();
         this.army = data;
-        console.log('Data loaded in Army Store:', this.army); // Log pour vérifier les données
+        console.log('Data loaded in Army Store:', this.army);
       } catch (error) {
         console.error('Erreur API: ', error);
       }

@@ -1,7 +1,6 @@
 <template>
   <div class="background page-container">
     <v-container class="d-flex justify-center align-center flex-column account-content">
-      <!-- Carte du compte -->
       <v-card class="mb-4 card-container">
         <v-card-title class="text-center">Mon compte</v-card-title>
         <v-card-text class="text-center form-content">
@@ -36,7 +35,6 @@
         </v-card-text>
       </v-card>
 
-      <!-- Carte des actions -->
       <v-card-text class="d-flex flex-column align-center action-buttons">
         <v-btn v-if="!isEditing" class="save-button mb-4 action-btn" @click="enableEdit">
           Modifier mon compte
@@ -119,7 +117,7 @@ const loadForm = () => {
 };
 
 const saveChanges = () => {
-  saveDialog.value = true; // Ouvre la modale de confirmation
+  saveDialog.value = true;
 };
 
 const performSave = () => {
@@ -186,7 +184,6 @@ loadForm();
   width: 100%;
 }
 
-/* Responsive Design */
 @media (max-width: 1200px) {
   .v-container {
     max-width: 70%;

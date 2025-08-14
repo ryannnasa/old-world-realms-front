@@ -1,7 +1,6 @@
 <template>
   <div class="background page-container">
     <v-container class="d-flex justify-center align-center flex-column">
-      <!-- Titre principal -->
       <div class="text-center mb-8">
         <h1 class="text-h3 font-weight-bold mb-4" style="color: #332018;">
           Mentions Légales
@@ -11,13 +10,12 @@
         </p>
       </div>
 
-      <!-- Contenu principal -->
+      
       <v-row class="w-100" justify="center">
         <v-col cols="12" md="10" lg="8">
           <v-card class="card-container mb-6">
             <v-card-text class="pa-8">
               
-              <!-- Section 1: Éditeur du site -->
               <div class="legal-section mb-6">
                 <h2 class="section-title mb-4">
                   <v-icon class="mr-2" color="#EBDEC2">mdi-domain</v-icon>
@@ -39,7 +37,7 @@
                 </div>
               </div>
 
-              <!-- Section 2: Hébergement -->
+              
               <div class="legal-section mb-6">
                 <h2 class="section-title mb-4">
                   <v-icon class="mr-2" color="#EBDEC2">mdi-server</v-icon>
@@ -55,7 +53,7 @@
                 </div>
               </div>
 
-              <!-- Section 3: Propriété intellectuelle -->
+              
               <div class="legal-section mb-6">
                 <h2 class="section-title mb-4">
                   <v-icon class="mr-2" color="#EBDEC2">mdi-copyright</v-icon>
@@ -85,7 +83,7 @@
                 </div>
               </div>
 
-              <!-- Section 4: Responsabilité -->
+              
               <div class="legal-section mb-6">
                 <h2 class="section-title mb-4">
                   <v-icon class="mr-2" color="#EBDEC2">mdi-shield-alert-outline</v-icon>
@@ -111,7 +109,7 @@
                 </div>
               </div>
 
-              <!-- Section 5: Données personnelles -->
+              
               <div class="legal-section mb-6">
                 <h2 class="section-title mb-4">
                   <v-icon class="mr-2" color="#EBDEC2">mdi-account-lock-outline</v-icon>
@@ -129,7 +127,7 @@
                 </div>
               </div>
 
-              <!-- Section 6: Cookies -->
+              
               <div class="legal-section mb-6">
                 <h2 class="section-title mb-4">
                   <v-icon class="mr-2" color="#EBDEC2">mdi-cookie-outline</v-icon>
@@ -148,7 +146,7 @@
                 </div>
               </div>
 
-              <!-- Section 7: Loi applicable -->
+              
               <div class="legal-section mb-6">
                 <h2 class="section-title mb-4">
                   <v-icon class="mr-2" color="#EBDEC2">mdi-gavel</v-icon>
@@ -167,7 +165,7 @@
                 </div>
               </div>
 
-              <!-- Section 8: Modification des mentions légales -->
+              
               <div class="legal-section mb-4">
                 <h2 class="section-title mb-4">
                   <v-icon class="mr-2" color="#EBDEC2">mdi-update</v-icon>
@@ -185,7 +183,7 @@
                 </div>
               </div>
 
-              <!-- Contact -->
+              
               <div class="contact-section text-center">
                 <v-divider class="my-6" color="#B8A082"></v-divider>
                 <h3 class="contact-title mb-3">Questions juridiques ?</h3>
@@ -210,7 +208,6 @@
 </template>
 
 <script setup>
-// Pas de logique JavaScript nécessaire pour cette page statique
 </script>
 
 <style scoped>
@@ -330,7 +327,6 @@
   box-shadow: 0 4px 12px rgba(184, 160, 130, 0.4);
 }
 
-/* Responsive */
 @media (max-width: 960px) {
   .page-container {
     padding-top: 20px;

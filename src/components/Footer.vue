@@ -2,7 +2,6 @@
   <v-footer dark class="my-footer mt-16">
     <v-container class="py-8">
       <v-row class="d-flex align-center justify-space-between">
-        <!-- Logo et titre -->
         <v-col cols="12" md="4" class="text-center text-md-left">
           <div class="d-flex align-center justify-center justify-md-start mb-4">
             <img src="/img/Logo Old World Realms.png" alt="Logo" class="footer-logo">
@@ -13,7 +12,6 @@
           </div>
         </v-col>
 
-        <!-- Liens de navigation -->
         <v-col cols="12" md="4" class="text-center">
           <h4 class="footer-section-title mb-3">Navigation</h4>
           <div class="footer-links">
@@ -32,7 +30,6 @@
           </div>
         </v-col>
 
-        <!-- Liens légaux -->
         <v-col cols="12" md="4" class="text-center text-md-right">
           <div class="footer-links">
             <h4 class="footer-section-title mb-3">Informations</h4>
@@ -54,7 +51,6 @@
 
       <v-divider class="my-6" color="amber darken-3"></v-divider>
 
-      <!-- Copyright et réseaux sociaux -->
       <v-row class="align-center">
         <v-col cols="12" md="6" class="text-center text-md-left">
           <p class="copyright-text mb-0">
@@ -194,7 +190,6 @@ const currentYear = computed(() => new Date().getFullYear());
   transform: translateY(-2px);
 }
 
-/* Responsive adjustments */
 @media (max-width: 960px) {
   .footer-links {
     align-items: center;
@@ -212,7 +207,6 @@ const currentYear = computed(() => new Date().getFullYear());
     justify-content: center !important;
   }
 
-  /* Logo et titre en colonne sur mobile */
   .d-flex.align-center.justify-center.justify-md-start {
     flex-direction: column !important;
     align-items: center !important;
@@ -224,8 +218,6 @@ const currentYear = computed(() => new Date().getFullYear());
     text-align: center !important;
   }
 }
-
-/* Divider styling */
 .v-divider {
   opacity: 0.3;
 }

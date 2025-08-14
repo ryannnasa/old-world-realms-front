@@ -1,6 +1,5 @@
 <template>
   <v-container fluid class="pa-0">
-    <!-- 1. Carrousel principal -->
     <v-carousel
       hide-delimiter-background
       show-arrows-on-hover
@@ -17,7 +16,7 @@
             <div class="carousel-text px-6">
               <h2 class="text-h3 font-weight-bold mb-4">{{ item.title }}</h2>
               <p class="text-subtitle-1 mb-4">{{ item.description }}</p>
-              <!-- Bouton dynamique si défini dans les données -->
+              
               <v-btn
                 v-if="item.button"
                 class="carousel-button mt-4"
@@ -34,7 +33,7 @@
 
     <v-divider class="my-0" thickness="6" color="amber darken-3" />
 
-    <!-- 2. Présentation du site -->
+    
 <v-container class="py-16" style="min-height: 80vh;">
   <v-row justify="space-between" align="center" class="presentation-row">
     <v-col cols="12" md="6" class="text-center text-md-left" style="max-width: 42rem; margin-left: 0;">
@@ -75,7 +74,7 @@
 
     <v-divider class="my-0" thickness="6" color="amber darken-3" />
 
-    <!-- 3. Rapports de bataille récents -->
+    
  <div class="background page-container">
     <v-container>
       <h2 class="text-h4 font-weight-bold mb-6 text-center">Mes Rapports de bataille</h2>
@@ -92,7 +91,7 @@
   </div>
     <v-divider class="my-0" thickness="6" color="amber darken-3" />
 
-    <!-- 4. Actualités Warhammer Community -->
+    
 <v-container 
   fluid
   class="d-flex align-center justify-center news-section"
@@ -105,7 +104,7 @@
       </p>
       <v-btn
         large
-        href="https://www.warhammer-community.com/en-gb/setting/warhammer-the-old-world/"
+        href="https://www.warhammer-community.com/tag/the-old-world/"
         target="_blank"
         class="news-button"
         @mouseover="(e) => e.currentTarget.style.backgroundColor = '#4b2d21'"
@@ -208,7 +207,7 @@ const siteNews = [
   },
 ]
 
-// Fonction pour gérer les clics de boutons du carrousel
+
 const handleButtonClick = (button) => {
   if (button.action === 'navigate' && button.target) {
     router.push(button.target);
@@ -247,12 +246,12 @@ onMounted(() => {
   color: #332018;
 }
 
-/* Couleur du texte du carrousel principal */
+
 .carousel-text {
   color: #EBDEC2;
 }
 
-/* Bouton du carrousel - style similaire au bouton "Créer un rapport" */
+
 .carousel-button {
   background-color: #332018 !important;
   color: #EBDEC2 !important;
@@ -278,7 +277,7 @@ onMounted(() => {
   margin-right: 4px !important;
 }
 
-/* Responsive pour le bouton du carrousel */
+
 @media (max-width: 768px) {
   .carousel-button {
     padding: 6px 12px !important;
@@ -301,7 +300,7 @@ onMounted(() => {
   }
 }
 
-/* Section présentation responsive */
+
 .presentation-text {
   order: 2;
 }
@@ -325,7 +324,7 @@ onMounted(() => {
   width: 100%;
 }
 
-/* Section actualités responsive */
+
 .news-section {
   min-height: 90vh;
   background-image: url('/img/Site/site2.jpg');
@@ -355,7 +354,7 @@ onMounted(() => {
   transition: background-color 0.3s ease;
 }
 
-/* Responsive Design */
+
 @media (max-width: 1200px) {
   .presentation-image {
     height: 350px;
@@ -392,7 +391,7 @@ onMounted(() => {
 }
 
 @media (max-width: 768px) {
-  /* Réduction de la hauteur du carrousel principal sur mobile */
+  
   .main-carousel {
     height: 50vh !important;
   }
@@ -435,7 +434,7 @@ onMounted(() => {
 }
 
 @media (max-width: 480px) {
-  /* Carrousel encore plus petit sur très petits écrans */
+  
   .main-carousel {
     height: 45vh !important;
   }

@@ -13,7 +13,6 @@ import '@mdi/font/css/materialdesignicons.css'
 
 import { useAuthStore } from './stores/auth'
 
-// Définition du thème personnalisé
 const myCustomLightTheme = {
   dark: false,
   colors: {
@@ -52,7 +51,6 @@ const myCustomLightTheme = {
   }
 }
 
-// Création de l'instance Vuetify avec le thème personnalisé
 const vuetify = createVuetify({
   components,
   directives,
@@ -64,15 +62,12 @@ const vuetify = createVuetify({
   },
 })
 
-// Création de l'app Vue
 const app = createApp(App)
 
-// Installation des plugins
 app.use(createPinia())
 app.use(router)
 app.use(vuetify)
 
-// Initialisation du store d'authentification puis montage de l'app
 const authStore = useAuthStore()
 authStore.init().then(() => {
   app.mount('#app')

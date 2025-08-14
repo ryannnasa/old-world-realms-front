@@ -2,26 +2,22 @@
   <div class="navbar-container">
     <v-app-bar dark class="my-app-bar">
       <div class="d-flex align-center justify-space-between w-100">
-        <!-- Logo visible seulement sur desktop -->
         <a href="/homepage" class="logo-link d-none d-md-flex">
           <img src="/img/Logo Old World Realms.png" alt="Logo" class="logo">
         </a>
 
-        <!-- Navigation desktop -->
         <div class="desktop-nav d-none d-md-flex">
           <v-btn text to="/homepage" router>Accueil</v-btn>
           <v-btn text to="/allbattlereports" router>Mes Rapports de Batailles</v-btn>
           <v-btn text to="/createabattlereport" router>Créer un Rapport de Bataille</v-btn>
         </div>
 
-        <!-- Account pour desktop -->
         <div class="desktop-actions d-none d-md-flex align-center">
           <v-btn icon text to="/myaccount" router>
             <v-icon>mdi-account</v-icon>
           </v-btn>
         </div>
 
-        <!-- Menu hamburger pour mobile - centré -->
         <div class="mobile-actions d-flex d-md-none align-center justify-center">
           <v-btn icon @click.stop="toggleMobileMenu">
             <v-icon>{{ showMobileMenu ? 'mdi-close' : 'mdi-menu' }}</v-icon>
@@ -30,9 +26,7 @@
       </div>
     </v-app-bar>
 
-    <!-- Menu mobile - DÉPLACÉ EN DEHORS DE v-app-bar -->
     <div v-if="showMobileMenu" class="mobile-menu-external">
-      <!-- Logo dans le menu mobile -->
       <div class="mobile-logo-container">
         <a href="/homepage" class="mobile-logo-link" @click="closeMobileMenu">
           <img src="/img/Logo Old World Realms.png" alt="Logo" class="mobile-logo">
@@ -84,7 +78,6 @@ const handleClickOutside = (event: MouseEvent) => {
   const mobileMenu = document.querySelector('.mobile-menu-external');
   const hamburgerBtn = document.querySelector('.mobile-actions');
   
-  // Ne fermer le menu que si on clique en dehors du menu ET du bouton hamburger
   if (showMobileMenu.value && 
       mobileMenu && 
       hamburgerBtn && 
@@ -162,7 +155,6 @@ onUnmounted(() => {
   justify-content: center;
 }
 
-/* NOUVEAUX STYLES POUR MENU EXTERNE */
 .mobile-menu-external {
   position: fixed !important;
   top: 80px !important;
@@ -263,7 +255,6 @@ onUnmounted(() => {
   opacity: 0;
 }
 
-/* Responsive Design */
 @media (max-width: 1100px) {
   .my-app-bar {
     max-width: 95%;

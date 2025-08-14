@@ -1,5 +1,4 @@
 <template>
-  <!-- Mode grille (pour AllBattleReports) -->
   <v-row v-if="displayMode === 'grid'">
     <v-col
       v-for="report in reports"
@@ -67,7 +66,6 @@
     </v-col>
   </v-row>
 
-  <!-- Mode carrousel (pour HomePage) -->
   <div v-else-if="displayMode === 'carousel'" class="carousel-wrapper d-flex justify-center align-center mb-4">
     <div class="carousel-container">
       <v-window v-model="currentPage" show-arrows continuous>
@@ -271,7 +269,6 @@ const promptDelete = (id: number) => {
   background-repeat: no-repeat;
 }
 
-/* Responsive Design */
 @media (min-width: 769px) {
   .battle-images-container {
     height: 200px;
@@ -327,7 +324,6 @@ const promptDelete = (id: number) => {
   }
 }
 
-/* Styles pour le mode carrousel */
 .carousel-wrapper {
   gap: 16px;
 }
@@ -356,7 +352,6 @@ const promptDelete = (id: number) => {
   font-size: 0.9rem;
 }
 
-/* Responsive pour le mode carrousel */
 @media (max-width: 1200px) {
   .carousel-item {
     flex: 0 0 calc(100% / 2);

@@ -108,16 +108,13 @@ const snackbar = ref(false);
 const snackbarMessage = ref('');
 const confirmDialog = ref(false);
 
-// Fonctions pour récupérer les noms depuis les stores (utilisation des utilitaires centralisés)
 const getArmyName = (armyId) => battleReportUtils.getArmyName(armyNameStore, armyId);
 const getArmyImageUrl = (armyId) => battleReportUtils.getArmyImageUrl(armyPhotoStore, armyId);
 const getAllianceName = (allianceId) => battleReportUtils.getAllianceName(allianceStore, allianceId);
 
 function fetchBattlePhotos(idBattleReport) {
-  console.log('Récupération des photos pour le rapport:', idBattleReport); // Debug
   return battleReportStore.fetchBattlePhotos(idBattleReport)
     .then(urls => {
-      console.log('Photos récupérées:', urls); // Debug
       battlePhotos.value = urls;
     })
     .catch(error => {
@@ -253,7 +250,6 @@ function closeSnackbar() {
   padding: 20px;
 }
 
-/* === RESPONSIVE DESIGN === */
 @media (max-width: 1200px) {
   .page-container {
     margin-top: 90px;

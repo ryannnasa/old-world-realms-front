@@ -89,7 +89,6 @@ const emit = defineEmits<Emits>();
 const showFilters = ref(false);
 const isMobile = ref(false);
 
-// Variables locales pour le v-model
 const localSelectedFaction = ref(props.selectedFaction);
 const localSelectedOpponent = ref(props.selectedOpponent);
 const localSelectedScenario = ref(props.selectedScenario);
@@ -203,7 +202,6 @@ onUnmounted(() => {
   text-align: center !important;
 }
 
-/* Responsive Design */
 @media (max-width: 960px) {
   .filter-title {
     user-select: none;

@@ -265,7 +265,6 @@ function deleteReport(id) {
   padding: 20px;
 }
 
-/* Responsive Design */
 @media (max-width: 1200px) {
   .page-container {
     margin-top: 90px;

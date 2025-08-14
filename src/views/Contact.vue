@@ -1,7 +1,6 @@
 <template>
   <div class="background page-container">
     <v-container class="d-flex justify-center align-center flex-column">
-      <!-- Titre principal -->
       <div class="text-center mb-8">
         <h1 class="text-h3 font-weight-bold mb-4" style="color: #332018;">
           Contactez-nous
@@ -12,7 +11,6 @@
       </div>
 
       <v-row class="w-100" justify="center">
-        <!-- Formulaire de contact -->
         <v-col cols="12" md="8" lg="6">
           <v-card class="card-container mb-6">
             <v-card-title class="text-center pb-2">
@@ -82,7 +80,6 @@
     </v-container>
   </div>
 
-  <!-- Snackbar de confirmation -->
   <v-snackbar v-model="snackbar" :color="snackbarColor" timeout="5000">
     {{ snackbarMessage }}
     <template v-slot:action="{ attrs }">
@@ -143,10 +140,8 @@ const submitForm = () => {
 
   isSubmitting.value = true;
 
-  // Simulation d'envoi (remplacez par votre API)
   new Promise(resolve => setTimeout(resolve, 2000))
     .then(() => {
-      // Réinitialiser le formulaire
       form.name = '';
       form.email = '';
       form.subject = '';
@@ -230,7 +225,6 @@ const submitForm = () => {
   box-shadow: 0 4px 12px rgba(184, 160, 130, 0.4);
 }
 
-/* Responsive */
 @media (max-width: 960px) {
   .page-container {
     padding-top: 20px;
