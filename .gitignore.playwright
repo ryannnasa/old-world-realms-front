@@ -1,0 +1,10 @@
+# Fichiers générés par Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
+# Screenshots et vidéos de tests
+/tests/e2e/screenshots/
+/tests/e2e/videos/
+/tests/e2e/traces/

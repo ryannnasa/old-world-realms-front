@@ -3,7 +3,6 @@ import { mount, VueWrapper } from '@vue/test-utils';
 
 import BattleReportCards from '../../src/components/BattleReportCards.vue';
 
-// Mock data pour les tests
 const mockPlayers = [
   {
     name: 'Joueur 1',
