@@ -1,0 +1,13 @@
+{
+  "name": "@old-world-realms/surveillance",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "watch": "node scripts/surveillance.mjs",
+    "watch:auto": "nodemon --watch src --watch public --exec 'node scripts/surveillance.mjs'",
+    "report": "node scripts/surveillance.mjs && open surveillance-report.json"
+  },
+  "dependencies": {
+    "nodemon": "^3.0.0"
+  }
+}

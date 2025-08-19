@@ -1,0 +1,19 @@
+{
+  "scripts": {
+    "security:audit": "npm audit --audit-level=moderate",
+    "security:fix": "npm audit fix",
+    "security:full": "npm run security:audit && npm run security:scan && npm run security:licenses",
+    "security:scan": "npx audit-ci --moderate && npx semgrep --config=auto",
+    "security:licenses": "npx license-checker --onlyAllow 'MIT;Apache-2.0;BSD-2-Clause;BSD-3-Clause;ISC'",
+    "security:secrets": "npx secretlint **/*",
+    "security:deps": "npx depcheck"
+  },
+  "devDependencies": {
+    "audit-ci": "^7.1.0",
+    "license-checker": "^25.0.1",
+    "semgrep": "^1.88.0",
+    "secretlint": "^8.2.4",
+    "depcheck": "^1.4.7",
+    "@secretlint/secretlint-rule-preset-recommend": "^8.2.4"
+  }
+}

@@ -1,0 +1,88 @@
+# Configuration Dependabot pour Old World Realms
+version: 2
+
+updates:
+  # 📦 Surveillance des dépendances NPM
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "ryannnasa"
+    assignees:
+      - "ryannnasa"
+    commit-message:
+      prefix: "⬆️"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "javascript"
+
+    # Groupement des mises à jour par type
+    groups:
+      vue-ecosystem:
+        patterns:
+          - "vue*"
+          - "@vue/*"
+          - "vuetify"
+          - "pinia"
+          - "vue-router"
+      testing-tools:
+        patterns:
+          - "vitest*"
+          - "@vitest/*"
+          - "playwright*"
+          - "@playwright/*"
+          - "@vue/test-utils"
+          - "jsdom"
+      build-tools:
+        patterns:
+          - "vite*"
+          - "@vitejs/*"
+          - "typescript"
+          - "vue-tsc"
+      dev-dependencies:
+        dependency-type: "development"
+        exclude-patterns:
+          - "vue*"
+          - "@vue/*"
+          - "vitest*"
+          - "playwright*"
+          - "vite*"
+          - "typescript"
+
+  # 🐙 Surveillance des GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+      time: "09:00"
+    reviewers:
+      - "ryannnasa"
+    assignees:
+      - "ryannnasa"
+    commit-message:
+      prefix: "🔧"
+    labels:
+      - "github-actions"
+      - "ci/cd"
+
+  # 🐳 Surveillance Dockerfile
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "saturday"
+      time: "09:00"
+    reviewers:
+      - "ryannnasa"
+    assignees:
+      - "ryannnasa"
+    commit-message:
+      prefix: "🐳"
+    labels:
+      - "docker"
