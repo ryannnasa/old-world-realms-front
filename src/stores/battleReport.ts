@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia';
+import { api } from '@/utils/api';
 
 type Player = {
   idPlayer?: number;
@@ -36,7 +37,7 @@ export const useBattleReportStore = defineStore('battleReport', {
 
   actions: {
     getBattleReport() {
-      return fetch('http://localhost:8080/battlereport')
+      return fetch(`${api}battlereport`)
         .then(res => res.json())
         .then(data => {
           this.battleReports = data;
@@ -45,7 +46,7 @@ export const useBattleReportStore = defineStore('battleReport', {
     },
 
     fetchBattleReportById(id: number) {
-      return fetch(`http://localhost:8080/battlereport/${id}`)
+      return fetch(`${api}battlereport/${id}`)
         .then(res => {
           if (!res.ok) throw new Error('Battle report introuvable');
           return res.json();
@@ -61,7 +62,7 @@ export const useBattleReportStore = defineStore('battleReport', {
     },
 
     fetchBattleReportByUserId(idUser: string) {
-      return fetch(`http://localhost:8080/battlereport/user/${idUser}`)
+      return fetch(`${api}battlereport/user/${idUser}`)
         .then(res => {
           if (!res.ok) throw new Error('Battle report introuvable');
           return res.json();
@@ -76,7 +77,7 @@ export const useBattleReportStore = defineStore('battleReport', {
     },
 
     deleteBattleReport(id: number) {
-      return fetch(`http://localhost:8080/battlereport/${id}`, { method: 'DELETE' })
+      return fetch(`${api}battlereport/${id}`, { method: 'DELETE' })
         .then(response => {
           if (!response.ok) throw new Error('Erreur lors de la suppression du rapport');
           this.battleReports = this.battleReports.filter(r => r.idBattleReport !== id);
@@ -99,7 +100,7 @@ export const useBattleReportStore = defineStore('battleReport', {
         return fd;
       }, new FormData());
 
-      return fetch(`http://localhost:8080/battlereport/${battleReportId}/photos`, {
+      return fetch(`${api}battlereport/${battleReportId}/photos`, {
         method: 'POST',
         body: formData,
       })
@@ -129,7 +130,7 @@ export const useBattleReportStore = defineStore('battleReport', {
     },
 
     createBattleReport(battleReport: Omit<BattleReport, 'idBattleReport'>) {
-      return fetch('http://localhost:8080/battlereport', {
+      return fetch(`${api}battlereport`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(battleReport),
@@ -153,7 +154,7 @@ export const useBattleReportStore = defineStore('battleReport', {
     updateBattleReport(battleReport: BattleReport) {
       if (!battleReport.idBattleReport) throw new Error('ID manquant pour mise à jour');
 
-      return fetch(`http://localhost:8080/battlereport/${battleReport.idBattleReport}`, {
+      return fetch(`${api}battlereport/${battleReport.idBattleReport}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(battleReport),
@@ -182,7 +183,7 @@ export const useBattleReportStore = defineStore('battleReport', {
     },
 
     deletePhotos(battleReportId: number, fileNames: string[]) {
-      return fetch(`http://localhost:8080/battlereport/${battleReportId}/photos`, {
+      return fetch(`${api}battlereport/${battleReportId}/photos`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(fileNames),
@@ -219,7 +220,7 @@ export const useBattleReportStore = defineStore('battleReport', {
 
     async getPhotoUrl(filename: string): Promise<string> {
       try {
-        const response = await fetch(`http://localhost:8080/image-url/${filename}`);
+        const response = await fetch(`${api}image-url/${filename}`);
         if (!response.ok) throw new Error('Erreur lors de la récupération du lien signé');
         return await response.text();
       } catch (err) {
@@ -230,7 +231,7 @@ export const useBattleReportStore = defineStore('battleReport', {
 
     async fetchBattlePhotos(idBattleReport: number): Promise<string[]> {
       try {
-        const response = await fetch(`http://localhost:8080/battlereport/${idBattleReport}/photos`);
+        const response = await fetch(`${api}battlereport/${idBattleReport}/photos`);
         if (!response.ok) {
           throw new Error('Erreur réseau');
         }

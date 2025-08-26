@@ -181,12 +181,12 @@ const siteNews = [
   {
     title: "Le Grand Cathay",
     description: "Miao Ying, la Reine-Dragon, est désormais disponible ! Détaillez vos meilleurs rapports de batailles avec cette nouvelle armée.",
-    image: "/public/img/carrousel/carrousel1.webp"
+    image: "/img/carrousel/carrousel1.webp"
   },
   {
     title: "Rapports de Batailles Fonctionnels",
     description: "Vous pouvez désormais créer et partager vos rapports de batailles avec des images et des détails sur les armées.",
-    image: "/public/img/carrousel/carrousel2.jpg",
+    image: "/img/carrousel/carrousel2.jpg",
     button: {
       text: "Voir mes rapports",
       icon: "mdi-view-list",
@@ -197,7 +197,7 @@ const siteNews = [
   {
     title: "Vos retours comptent",
     description: "Vos retours sont précieux pour améliorer le site. Partagez vos idées et suggestions !",
-    image: "/public/img/carrousel/carrousel3.jpg",
+    image: "/img/carrousel/carrousel3.jpg",
     button: {
       text: "Contactez-nous",
       icon: "mdi-email-outline",

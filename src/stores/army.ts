@@ -1,4 +1,5 @@
-import { defineStore } from 'pinia';
+import { defineStore } from 'pinia'
+import { api } from '@/utils/api';
 
 export const useArmyStore = defineStore('army', {
   state: () => ({
@@ -7,7 +8,7 @@ export const useArmyStore = defineStore('army', {
   actions: {
     async getArmy() {
       try {
-        const response = await fetch('http://localhost:8080/army');
+        const response = await fetch('${api}army');
         if (!response.ok) {
           throw new Error('Network response was not ok');
         }

@@ -1,11 +1,12 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
+import { api } from '@/utils/api'
 
 export const useMountDescriptionStore = defineStore('mountDescription', {
     state: () => ({ mountDescription: []}),
     actions: {
       getMountDescription() {
-        fetch('http://localhost:8080/mountdescription')
+        fetch('${api}mountdescription')
         .then(res => res.json())
         .then(data => this.mountDescription = data)
         .catch(err => console.error('Erreur API: ', err));

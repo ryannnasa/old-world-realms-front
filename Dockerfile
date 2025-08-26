@@ -1,11 +1,19 @@
-FROM node:21
+# Stage 1: Build de l'application Vue.js
+FROM node:21-alpine AS build
 
-WORKDIR /app
+# Copie des fichiers de dépendances
+COPY package.json ./
 
-COPY package*.json ./
-
+# Installation des dépendances
 RUN npm install
 
+# Copie du code source
 COPY . .
 
-CMD ["npm", "run", "dev", "--host 0.0.0.0"]
+# Build de production
+RUN npm run build
+
+FROM nginx
+COPY --from=build dist /usr/share/nginx/html
+RUN rm /etc/nginx/conf.d/default.conf
+COPY nginx.conf /etc/nginx/conf.d

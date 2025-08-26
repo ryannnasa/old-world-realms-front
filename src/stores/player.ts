@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { api } from '@/utils/api'
 
 type Player = {
   name: string;
@@ -11,13 +12,13 @@ export const usePlayerStore = defineStore('player', {
   state: () => ({ player: [] }),
   actions: {
     getPlayer() {
-      fetch('http://localhost:8080/player')
+      fetch(`${api}player`)
         .then(res => res.json())
         .then(data => this.player = data)
         .catch(err => console.error('Erreur API: ', err));
     },
  addPlayer(player : Player) {
-  return fetch('http://localhost:8080/player', {
+  return fetch(`${api}player`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
