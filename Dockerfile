@@ -1,5 +1,5 @@
 # Stage 1: Build de l'application Vue.js
-FROM node:21-alpine AS build
+FROM node:24-alpine AS build
 
 # Copie des fichiers de dépendances
 COPY package.json ./
