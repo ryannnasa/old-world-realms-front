@@ -258,15 +258,17 @@ onUnmounted(() => {
 @media (max-width: 1100px) {
   .my-app-bar {
     max-width: 95%;
-    margin-top: 8px;
+    margin-top: 0 !important;
+    top: 0 !important;
+    position: fixed !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
   }
-  
   .mobile-menu-external {
-    top: 72px !important;
+    top: 64px !important;
     max-width: 95% !important;
     width: 95% !important;
   }
-  
   .logo {
     height: 60px;
   }
@@ -274,17 +276,26 @@ onUnmounted(() => {
 
 @media (max-width: 600px) {
   .my-app-bar {
-    max-width: 98%;
-    margin-top: 40px;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    left: 0 !important;
+    right: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    margin-top: 0 !important;
+    top: 0 !important;
+    position: fixed !important;
+    border-radius: 0 0 12px 12px !important;
     height: 60px;
+    transform: none !important;
   }
-  
   .mobile-menu-external {
-    top: 100px !important;
-    max-width: 98% !important;
-    width: 98% !important;
+    top: 60px !important;
+    max-width: 100vw !important;
+    width: 100vw !important;
+    left: 0 !important;
+    transform: none !important;
   }
-  
   .logo {
     height: 50px;
   }
@@ -292,16 +303,27 @@ onUnmounted(() => {
 
 @media (max-width: 480px) {
   .my-app-bar {
-    border-radius: 12px;
-    height: 56px;
-    margin-top: 45px;
-  }
-  
-  .mobile-menu-external {
-    top: 101px !important;
     border-radius: 0 0 12px 12px !important;
+    height: 56px;
+    margin-top: 0 !important;
+    top: 0 !important;
+    position: fixed !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    left: 0 !important;
+    right: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    transform: none !important;
   }
-  
+  .mobile-menu-external {
+    top: 56px !important;
+    border-radius: 0 0 12px 12px !important;
+    max-width: 100vw !important;
+    width: 100vw !important;
+    left: 0 !important;
+    transform: none !important;
+  }
   .logo {
     height: 45px;
   }
@@ -309,11 +331,24 @@ onUnmounted(() => {
 
 @media (max-width: 430px) and (min-height: 800px) {
   .my-app-bar {
-    margin-top: 50px;
+    margin-top: 0 !important;
+    top: 0 !important;
+    position: fixed !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    left: 0 !important;
+    right: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    border-radius: 0 0 12px 12px !important;
+    transform: none !important;
   }
-  
   .mobile-menu-external {
-    top: 106px !important;
+    top: 56px !important;
+    max-width: 100vw !important;
+    width: 100vw !important;
+    left: 0 !important;
+    transform: none !important;
   }
 }
 </style>

@@ -38,16 +38,13 @@
   <v-row justify="space-between" align="center" class="presentation-row">
     <v-col cols="12" md="6" class="text-center text-md-left" style="max-width: 42rem; margin-left: 0;">
       <h1 class="text-h3 font-weight-bold mb-8" style="max-width: none;">
-        Bienvenue sur Old World Realms
+        {{ presentationTitle }}
       </h1>
-      <p class="text-body-1 mb-6">
-        Old World Realms est une encyclopédie interactive dédiée à Warhammer: The Old World. Que vous soyez joueur débutant ou vétéran, vous trouverez ici toutes les règles des armées, des outils pour créer vos listes, partager vos rapports de batailles, et suivre vos campagnes.
-      </p>
-      <p class="text-body-1 mb-6">
-        Plongez dans l’univers riche et sombre du Vieux Monde, explorez les différentes factions et leurs traditions ancestrales, consultez les scénarios officiels et découvrez comment d'autres joueurs racontent leurs affrontements épiques à travers nos rapports illustrés.
+      <p v-for="(paragraph, idx) in presentationParagraphs" :key="idx" class="text-body-1 mb-6" v-if="idx < presentationParagraphs.length - 1">
+        {{ paragraph }}
       </p>
       <p class="text-body-1">
-        Grâce à notre communauté passionnée, vous pouvez non seulement consulter les règles, mais aussi partager vos propres campagnes, échanger stratégies et récits, et vivre l’expérience immersive d’un monde en perpétuelle évolution. Embarquez pour une aventure unique où chaque bataille façonne l’histoire du Vieux Monde.
+        {{ presentationParagraphs[presentationParagraphs.length - 1] }}
       </p>
     </v-col>
     <v-col
@@ -56,18 +53,18 @@
       style="max-width: 55rem; min-width: 20rem;"
     >
       <div
-        style="
-          background-image: url('/public/img/site/site1.jpg');
-          background-size: cover;
-          background-position: center;
-          height: 550px;
-          border-radius: 12px;
-          box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-          min-width: 20rem;
-        "
+        :style="{
+          backgroundImage: `url('${presentationImage}')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          height: '550px',
+          borderRadius: '12px',
+          boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
+          minWidth: '20rem'
+        }"
         aria-label="Image représentant le Vieux Monde"
         role="img"
-      ></div>
+      />
     </v-col>
   </v-row>
 </v-container>
@@ -77,9 +74,9 @@
     
  <div class="background page-container">
     <v-container>
-      <h2 class="text-h4 font-weight-bold mb-6 text-center">Mes Rapports de bataille</h2>
+      <h2 class="text-h4 font-weight-bold mb-6 text-center">{{ battleReportsTitle }}</h2>
       <p class="text-body-1 text-center mb-6">
-        Redécouvrez les derniers récits de batailles que vous avez vécu.
+        {{ battleReportsDescription }}
       </p>
       <BattleReportCards 
         :reports="reports" 
@@ -98,19 +95,19 @@
 >
   <v-row justify="center" align="center" class="pa-8 news-content">
     <v-col cols="12" md="8">
-      <h2 class="text-h4 font-weight-bold mb-4">Actualités Warhammer: The Old World</h2>
+      <h2 class="text-h4 font-weight-bold mb-4">{{ newsTitle }}</h2>
       <p class="mb-6 news-description">
-        Suivez les dernières annonces officielles, mises à jour de règles, sorties de figurines et scénarios spéciaux proposés par Games Workshop.
+        {{ newsDescription }}
       </p>
       <v-btn
         large
-        href="https://www.warhammer-community.com/tag/the-old-world/"
+        :href="newsButtonUrl"
         target="_blank"
         class="news-button"
         @mouseover="(e) => e.currentTarget.style.backgroundColor = '#4b2d21'"
         @mouseleave="(e) => e.currentTarget.style.backgroundColor = '#332018'"
       >
-        Voir les articles officiels
+        {{ newsButtonText }}
       </v-btn>
     </v-col>
   </v-row>
@@ -181,12 +178,12 @@ const siteNews = [
   {
     title: "Le Grand Cathay",
     description: "Miao Ying, la Reine-Dragon, est désormais disponible ! Détaillez vos meilleurs rapports de batailles avec cette nouvelle armée.",
-    image: "/img/carrousel/carrousel1.webp"
+    image: "/img/Carrousel/carrousel1.webp"
   },
   {
     title: "Rapports de Batailles Fonctionnels",
     description: "Vous pouvez désormais créer et partager vos rapports de batailles avec des images et des détails sur les armées.",
-    image: "/img/carrousel/carrousel2.jpg",
+    image: "/img/Carrousel/carrousel2.jpg",
     button: {
       text: "Voir mes rapports",
       icon: "mdi-view-list",
@@ -197,7 +194,7 @@ const siteNews = [
   {
     title: "Vos retours comptent",
     description: "Vos retours sont précieux pour améliorer le site. Partagez vos idées et suggestions !",
-    image: "/img/carrousel/carrousel3.jpg",
+    image: "/img/Carrousel/carrousel3.jpg",
     button: {
       text: "Contactez-nous",
       icon: "mdi-email-outline",
@@ -206,8 +203,19 @@ const siteNews = [
     }
   },
 ]
-
-
+const presentationTitle = "Bienvenue sur Old World Realms";
+const presentationParagraphs = [
+  "Old World Realms est une encyclopédie interactive dédiée à Warhammer: The Old World. Que vous soyez joueur débutant ou vétéran, vous trouverez ici toutes les règles des armées, des outils pour créer vos listes, partager vos rapports de batailles, et suivre vos campagnes.",
+  "Plongez dans l’univers riche et sombre du Vieux Monde, explorez les différentes factions et leurs traditions ancestrales, consultez les scénarios officiels et découvrez comment d'autres joueurs racontent leurs affrontements épiques à travers nos rapports illustrés.",
+  "Grâce à notre communauté passionnée, vous pouvez non seulement consulter les règles, mais aussi partager vos propres campagnes, échanger stratégies et récits, et vivre l’expérience immersive d’un monde en perpétuelle évolution. Embarquez pour une aventure unique où chaque bataille façonne l’histoire du Vieux Monde."
+];
+const presentationImage = "/img/Site/site1.jpg";
+const battleReportsTitle = "Mes Rapports de bataille";
+const battleReportsDescription = "Redécouvrez les derniers récits de batailles que vous avez vécu.";
+const newsTitle = "Actualités Warhammer: The Old World";
+const newsDescription = "Suivez les dernières annonces officielles, mises à jour de règles, sorties de figurines et scénarios spéciaux proposés par Games Workshop.";
+const newsButtonText = "Voir les articles officiels";
+const newsButtonUrl = "https://www.warhammer-community.com/tag/the-old-world/";
 const handleButtonClick = (button) => {
   if (button.action === 'navigate' && button.target) {
     router.push(button.target);
@@ -249,6 +257,9 @@ onMounted(() => {
 
 .carousel-text {
   color: #EBDEC2;
+  padding-top: 80px;
+  padding-bottom: 48px;
+  /* Pour mobile, on ajustera plus bas */
 }
 
 
@@ -283,11 +294,11 @@ onMounted(() => {
     padding: 6px 12px !important;
     font-size: 0.9rem !important;
   }
+}
   
   .carousel-button .v-icon {
     font-size: 14px !important;
   }
-}
 
 @media (max-width: 480px) {
   .carousel-button {
@@ -354,6 +365,46 @@ onMounted(() => {
   transition: background-color 0.3s ease;
 }
 
+/* Masquer les boutons flèches du carrousel Vuetify */
+:deep(.v-carousel__arrow),
+:deep(.v-btn.v-btn--icon.v-carousel__arrow),
+:deep(.v-carousel__arrow > .v-btn),
+:deep(.v-carousel__arrow svg),
+:deep(.v-carousel__arrow .v-icon) {
+  /* On ne masque plus globalement */
+}
+
+@media (max-width: 600px) {
+  /* Réduire la taille et positionner les flèches du carrousel sur les bords */
+  :deep(.v-window__right),
+  :deep(.v-window__left),
+  :deep(.v-carousel__arrow),
+  :deep(.v-btn.v-btn--icon.v-carousel__arrow) {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    min-height: 32px !important;
+    font-size: 18px !important;
+    border-radius: 50% !important;
+    padding: 0 !important;
+    position: absolute !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+  }
+  :deep(.v-window__right), :deep(.v-carousel__arrow.v-window__right) {
+    right: 8px !important;
+    left: auto !important;
+  }
+  :deep(.v-window__left), :deep(.v-carousel__arrow.v-window__left) {
+    left: 8px !important;
+    right: auto !important;
+  }
+  :deep(.v-carousel__arrow .v-icon),
+  :deep(.v-window__right .v-icon),
+  :deep(.v-window__left .v-icon) {
+    font-size: 18px !important;
+  }
+}
 
 @media (max-width: 1200px) {
   .presentation-image {
@@ -410,6 +461,15 @@ onMounted(() => {
 }
 
 @media (max-width: 600px) {
+    ::v-deep .carousel-text h2 {
+    margin-bottom: 0.5rem !important;
+  }
+  ::v-deep .carousel-text p {
+    margin-bottom: 0.35rem !important;
+  }
+  ::v-deep .carousel-button {
+    margin-top: 0.35rem !important;
+  }
   .presentation-title {
     font-size: 1.75rem;
   }
@@ -436,7 +496,11 @@ onMounted(() => {
 @media (max-width: 480px) {
   
   .main-carousel {
-    height: 45vh !important;
+    height: 50vh !important;
+  }
+  .carousel-text {
+    padding-top: 56px;
+    padding-bottom: 32px;
   }
   
   .presentation-title {
@@ -450,6 +514,13 @@ onMounted(() => {
   
   .presentation-image {
     height: 180px;
+  }
+  .main-carousel {
+    height: 50vh !important;
+  }
+  .carousel-text {
+    padding-top: 100px;
+    padding-bottom: 64px;
   }
 }
 </style>
