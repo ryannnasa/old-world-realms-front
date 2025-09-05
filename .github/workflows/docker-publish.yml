@@ -32,5 +32,5 @@ jobs:
           context: .
           push: true
           tags: |
-            maximerobin44/old-world-realms-frontend:latest
-            maximerobin44/old-world-realms-frontend:${{ env.SHORT_SHA }}
+            maximerobin44/old-world-realms-front:latest
+            maximerobin44/old-world-realms-front:${{ env.SHORT_SHA }}
