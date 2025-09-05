@@ -2,7 +2,6 @@
 version: 2
 
 updates:
-  # 📦 Surveillance des dépendances NPM
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
@@ -21,7 +20,6 @@ updates:
       - "dependencies"
       - "javascript"
 
-    # Groupement des mises à jour par type
     groups:
       vue-ecosystem:
         patterns:
