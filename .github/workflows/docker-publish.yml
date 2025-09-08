@@ -18,15 +18,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Define git user
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
       - name: Bump patch version
         run: |
           npm version ${{ github.ref_name }}
 
       - name: Commit and push version bump
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add package.json package-lock.json || true
           git commit -m "ci: bump version [skip ci]" || echo "No changes to commit"
           git push || echo "No changes to push"
 
