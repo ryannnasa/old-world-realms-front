@@ -9,6 +9,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Debug version
+        run: |
+          echo "github.ref_name: ${{ github.ref_name }}"
+          echo "github.ref: ${{ github.ref }}"
+          echo "GITHUB_REF: $GITHUB_REF"
+
       - name: Checkout code
         uses: actions/checkout@v4
 
