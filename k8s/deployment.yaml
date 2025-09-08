@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: old-world-realms-front
+  labels:
+    app: old-world-realms-front
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: old-world-realms-front
+  template:
+    metadata:
+      labels:
+        app: old-world-realms-front
+    spec:
+      containers:
+        - name: old-world-realms-front
+          image: maximerobin44/old-world-realms-front:$VERSION
+          ports:
+            - containerPort: 5173
+              name: http
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "200m"

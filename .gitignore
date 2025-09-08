@@ -58,4 +58,3 @@ licenses.json
 auth.json
 token.txt
 *.token
-k8s

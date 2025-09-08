@@ -1,0 +1,12 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: old-world-realms-certificate
+  namespace: default
+spec:
+  secretName: old-world-realms-tls
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+    - oldworldrealms.app

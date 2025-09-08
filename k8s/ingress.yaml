@@ -1,0 +1,30 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: old-world-realms-ingress
+  namespace: default
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    # Activer SSL et forcer la redirection HTTPS
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    # Annotation cert-manager pour générer automatiquement le certificat
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  # Configuration TLS avec Let's Encrypt
+  tls:
+    - hosts:
+        - oldworldrealms.app
+      secretName: old-world-realms-tls
+  rules:
+    - host: oldworldrealms.app
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: old-world-realms-front-service
+                port:
+                  number: 80
