@@ -1,4 +1,4 @@
-name: Build & Push Frontend Docker Image
+name: Pipeline Frontend Docker Image
 
 on:
   release:
@@ -9,12 +9,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Debug version
-        run: |
-          echo "github.ref_name: ${{ github.ref_name }}"
-          echo "github.ref: ${{ github.ref }}"
-          echo "GITHUB_REF: $GITHUB_REF"
-
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -39,9 +33,23 @@ jobs:
           push: false
           tags: maximerobin44/old-world-realms-front:${{ github.ref_name }}
 
-  push:
+  test:
     runs-on: ubuntu-latest
     needs: build
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npm run test
+
+  push:
+    runs-on: ubuntu-latest
+    needs: test
 
     steps:
       - name: Checkout code
