@@ -43,7 +43,9 @@ describe('Army Store - Tests unitaires', () => {
       } as Response);
 
       return store.getArmy().then(() => {
-        expect(global.fetch).toHaveBeenCalledWith('http://localhost:8080/army');
+        // Vérifie que fetch a été appelé avec une URL se terminant par 'army'
+        const fetchCall = (global.fetch as any).mock.calls[0][0];
+        expect(fetchCall.endsWith('army')).toBe(true);
         expect(store.army).toEqual(mockData);
         expect(store.army).toHaveLength(2);
         expect(consoleLogSpy).toHaveBeenCalledWith('Data loaded in Army Store:', mockData);

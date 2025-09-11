@@ -1,3 +1,14 @@
+// Mock global de fetch pour tous les tests (évite les erreurs réseau en CI)
+if (!global.fetch) {
+  global.fetch = vi.fn().mockImplementation(() =>
+    Promise.resolve({
+      ok: true,
+      json: () => Promise.resolve({}),
+      text: () => Promise.resolve(''),
+      status: 200
+    })
+  );
+}
 import { vi } from 'vitest';
 import './vuetifyStubs';
 
