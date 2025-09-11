@@ -5,7 +5,7 @@ export const useArmyCompositionStore = defineStore('armyComposition', {
     state: () => ({ armyComposition: []}),
     actions: {
       getArmyComposition() {
-        fetch('${api}armycomposition')
+        fetch(`${api}armycomposition`)
         .then(res => res.json())
         .then(data => this.armyComposition = data)
         .catch(err => console.error('Erreur API: ', err));

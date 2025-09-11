@@ -6,7 +6,7 @@ export const usePointsTypeHasMountUnitStore = defineStore('pointsTypeHasMountUni
     state: () => ({ pointsTypeHasMountUnit: []}),
     actions: {
       getPointsTypeHasMountUnit() {
-        fetch('${api}pointstypehasmountunit')
+        fetch(`${api}pointstypehasmountunit`)
         .then(res => res.json())
         .then(data => this.pointsTypeHasMountUnit = data)
         .catch(err => console.error('Erreur API: ', err));

@@ -6,7 +6,7 @@ export const useMountStore = defineStore('mount', {
     state: () => ({ mount: []}),
     actions: {
       getMount() {
-        fetch('${api}mount')
+        fetch(`${api}mount`)
         .then(res => res.json())
         .then(data => this.mount = data)
         .catch(err => console.error('Erreur API: ', err));

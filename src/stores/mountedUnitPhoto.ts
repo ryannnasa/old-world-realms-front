@@ -6,7 +6,7 @@ export const useMountedUnitPhotoStore = defineStore('mountedUnitPhoto', {
     state: () => ({ mountedUnitPhoto: []}),
     actions: {
       getMountUnitPhoto() {
-        fetch('${api}mountedunitphoto')
+        fetch(`${api}mountedunitphoto`)
         .then(res => res.json())
         .then(data => this.mountedUnitPhoto = data)
         .catch(err => console.error('Erreur API: ', err));

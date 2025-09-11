@@ -6,7 +6,7 @@ export const usePointsTypeStore = defineStore('pointsType', {
     state: () => ({ pointsType: []}),
     actions: {
       getPointsType() {
-        fetch('${api}pointstype')
+        fetch(`${api}pointstype`)
         .then(res => res.json())
         .then(data => this.pointsType = data)
         .catch(err => console.error('Erreur API: ', err));

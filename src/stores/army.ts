@@ -8,7 +8,7 @@ export const useArmyStore = defineStore('army', {
   actions: {
     async getArmy() {
       try {
-        const response = await fetch('${api}army');
+        const response = await fetch(`${api}army`);
         if (!response.ok) {
           throw new Error('Network response was not ok');
         }
