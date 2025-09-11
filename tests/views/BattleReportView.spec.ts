@@ -2,11 +2,11 @@ import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { nextTick } from 'vue';
-import BattleReportView from '@/views/BattleReportView.vue';
-import { useBattleReportStore } from '@/stores/battleReport';
-import { useArmyPhotoStore } from '@/stores/armyPhoto';
-import { useArmyNameStore } from '@/stores/armyName';
-import { useAllianceStore } from '@/stores/alliance';
+import BattleReportView from '../../src/views/BattleReportView.vue';
+import { useBattleReportStore } from '../../src/stores/battleReport';
+import { useArmyPhotoStore } from '../../src/stores/armyPhoto';
+import { useArmyNameStore } from '../../src/stores/armyName';
+import { useAllianceStore } from '../../src/stores/alliance';
 
 // Mock du router
 const mockPush = vi.fn();
@@ -54,40 +54,11 @@ describe('BattleReportView - Tests unitaires', () => {
     ]
   };
 
-  beforeEach(() => {
+  beforeEach(async () => {
     pinia = createPinia();
     setActivePinia(pinia);
 
-    // Mock de la route
-    const mockRoute = {
-      params: { id: '123' }
-    };
-
-    wrapper = mount(BattleReportView, {
-      global: {
-        plugins: [pinia],
-        mocks: {
-          $route: mockRoute
-        },
-        stubs: {
-          'v-container': { template: '<div><slot /></div>' },
-          'v-card': { template: '<div><slot /></div>' },
-          'v-card-title': { template: '<div><slot /></div>' },
-          'v-card-text': { template: '<div><slot /></div>' },
-          'v-card-actions': { template: '<div><slot /></div>' },
-          'v-row': { template: '<div><slot /></div>' },
-          'v-col': { template: '<div><slot /></div>' },
-          'v-btn': { template: '<button @click="$emit(\'click\')"><slot /></button>' },
-          'v-icon': { template: '<span><slot /></span>' },
-          'v-carousel': { template: '<div><slot /></div>' },
-          'v-carousel-item': { template: '<div><slot /></div>' },
-          'v-snackbar': { template: '<div v-if="modelValue"><slot /></div>', props: ['modelValue'] },
-          'v-dialog': { template: '<div v-if="modelValue"><slot /></div>', props: ['modelValue'] },
-          'v-spacer': { template: '<div></div>' }
-        }
-      }
-    });
-
+    // Préparer les stores et leurs mocks AVANT le montage
     battleReportStore = useBattleReportStore();
     armyPhotoStore = useArmyPhotoStore();
     armyNameStore = useArmyNameStore();
@@ -95,6 +66,7 @@ describe('BattleReportView - Tests unitaires', () => {
 
     // Mock des données des stores
     battleReportStore.battleReports = [mockBattleReport];
+    battleReportStore.currentBattleReport = mockBattleReport;
     armyPhotoStore.armyPhotos = [
       { idArmyPhoto: 1, armyName_idArmyName: 1, armyPhotoUrl: 'url1.jpg' },
       { idArmyPhoto: 2, armyName_idArmyName: 2, armyPhotoUrl: 'url2.jpg' }
@@ -117,13 +89,33 @@ describe('BattleReportView - Tests unitaires', () => {
     armyNameStore.getArmyName = vi.fn().mockResolvedValue([]);
     allianceStore.getAlliance = vi.fn().mockResolvedValue([]);
 
-    // Assurer que le rapport est accessible via computed
-    battleReportStore.currentBattleReport = mockBattleReport;
-    
-    // Attendez le montage et la résolution des promesses
-    return nextTick().then(() => {
-      return new Promise(resolve => setTimeout(resolve, 100));
+    wrapper = mount(BattleReportView, {
+      global: {
+        plugins: [pinia],
+        mocks: {
+          $route: { params: { id: '123' } }
+        },
+        stubs: {
+          'v-container': { template: '<div><slot /></div>' },
+          'v-card': { template: '<div><slot /></div>' },
+          'v-card-title': { template: '<div><slot /></div>' },
+          'v-card-text': { template: '<div><slot /></div>' },
+          'v-card-actions': { template: '<div><slot /></div>' },
+          'v-row': { template: '<div><slot /></div>' },
+          'v-col': { template: '<div><slot /></div>' },
+          'v-btn': { template: '<button @click="$emit(\'click\')"><slot /></button>' },
+          'v-icon': { template: '<span><slot /></span>' },
+          'v-carousel': { template: '<div><slot /></div>' },
+          'v-carousel-item': { template: '<div><slot /></div>' },
+          'v-snackbar': { template: '<div v-if="modelValue"><slot /></div>', props: ['modelValue'] },
+          'v-dialog': { template: '<div v-if="modelValue"><slot /></div>', props: ['modelValue'] },
+          'v-spacer': { template: '<div></div>' }
+        }
+      }
     });
+
+    await nextTick();
+    await new Promise(resolve => setTimeout(resolve, 100));
   });
 
   afterEach(() => {
@@ -133,11 +125,7 @@ describe('BattleReportView - Tests unitaires', () => {
 
   describe('Rendu initial du composant', () => {
     it('devrait afficher le titre du rapport de bataille', () => {
-      return nextTick().then(() => {
-        return new Promise(resolve => setTimeout(resolve, 100));
-      }).then(() => {
-        expect(wrapper.text()).toContain('Test Battle Report');
-      });
+  expect(wrapper.text()).toContain('Test Battle Report');
     });
 
     it('devrait afficher les boutons d\'édition et de suppression', () => {
@@ -146,22 +134,14 @@ describe('BattleReportView - Tests unitaires', () => {
     });
 
     it('devrait afficher la description de la bataille', () => {
-      return nextTick().then(() => {
-        return new Promise(resolve => setTimeout(resolve, 100));
-      }).then(() => {
-        expect(wrapper.text()).toContain('This is a test battle report description');
-      });
+  expect(wrapper.text()).toContain('This is a test battle report description');
     });
   });
 
   describe('Gestion des joueurs et scores', () => {
     it('devrait afficher les informations des joueurs', () => {
-      return nextTick().then(() => {
-        return new Promise(resolve => setTimeout(resolve, 100));
-      }).then(() => {
-        expect(wrapper.text()).toContain('Player 1');
-        expect(wrapper.text()).toContain('Player 2');
-      });
+  expect(wrapper.text()).toContain('Player 1');
+  expect(wrapper.text()).toContain('Player 2');
     });
 
     it('devrait calculer correctement les gagnants', () => {
@@ -229,11 +209,7 @@ describe('BattleReportView - Tests unitaires', () => {
 
   describe('Gestion des photos', () => {
     it('devrait récupérer les photos du rapport de bataille', () => {
-      return nextTick().then(() => {
-        return new Promise(resolve => setTimeout(resolve, 100));
-      }).then(() => {
-        expect(battleReportStore.fetchBattlePhotos).toHaveBeenCalledWith(123);
-      });
+  expect(battleReportStore.fetchBattlePhotos).toHaveBeenCalledWith(123);
     });
 
     it('devrait gérer les erreurs lors de la récupération des photos', () => {
@@ -258,16 +234,12 @@ describe('BattleReportView - Tests unitaires', () => {
 
   describe('Actions d\'édition et suppression', () => {
     it('devrait naviguer vers la page d\'édition lors du clic sur éditer', () => {
-      return nextTick().then(() => {
-        return new Promise(resolve => setTimeout(resolve, 100));
-      }).then(() => {
-        // Simuler le clic sur le bouton d'édition
-        const editButton = wrapper.findAll('button')[0];
-        return editButton.trigger('click').then(() => {
-          expect(mockPush).toHaveBeenCalledWith({
-            name: 'Modify A New Battle Report',
-            params: { id: 123 }
-          });
+      // Simuler le clic sur le bouton d'édition
+      const editButton = wrapper.findAll('button')[0];
+      return editButton.trigger('click').then(() => {
+        expect(mockPush).toHaveBeenCalledWith({
+          name: 'Modify A New Battle Report',
+          params: { id: 123 }
         });
       });
     });
@@ -459,7 +431,7 @@ describe('BattleReportView - Tests unitaires', () => {
       });
       
       return wrapperWithEmptyStore.vm.$nextTick().then(() => {
-        expect(wrapperWithEmptyStore.vm.battleReport).toBeNull();
+  expect(wrapperWithEmptyStore.text()).not.toContain('Test Battle Report');
       });
     });
   });

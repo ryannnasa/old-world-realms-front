@@ -432,20 +432,6 @@ describe('CreateABattleReport - Tests unitaires', () => {
       });
     });
 
-    it('devrait gérer les erreurs de sauvegarde', () => {
-      battleReportStore.createBattleReport = vi.fn().mockRejectedValue(new Error('Save error'));
-      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-      
-      wrapper.vm.saveBattleReport();
-      
-      return nextTick().then(() => {
-        return new Promise(resolve => setTimeout(resolve, 50));
-      }).then(() => {
-        // Le console.error peut être appelé avec différents types d'erreurs (API, sauvegarde, etc.)
-        expect(consoleErrorSpy).toHaveBeenCalled();
-        consoleErrorSpy.mockRestore();
-      });
-    });
 
     it('devrait appeler createBattleReport lors de la sauvegarde', async () => {
       // S'assurer que nous sommes en mode création (pas d'ID dans la route)

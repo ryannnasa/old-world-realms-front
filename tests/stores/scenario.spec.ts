@@ -42,7 +42,7 @@ describe('Scenario Store - Tests unitaires', () => {
       store.getScenario();
 
       return new Promise(resolve => setTimeout(resolve, 50)).then(() => {
-        expect(global.fetch).toHaveBeenCalledWith('http://localhost:8080/scenario');
+  expect(global.fetch).toHaveBeenCalledWith('https://api.oldworldrealms.app/scenario');
         expect(store.scenario).toEqual(mockData);
       });
     });

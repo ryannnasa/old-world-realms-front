@@ -60,7 +60,7 @@ describe('BattleReport Store - Tests unitaires', () => {
 
       return store.getBattleReport().then(() => {
         expect(store.battleReports).toEqual(mockData);
-        expect(global.fetch).toHaveBeenCalledWith('http://localhost:8080/battlereport');
+  expect(global.fetch).toHaveBeenCalledWith('https://api.oldworldrealms.app/battlereport');
       });
     });
 
@@ -89,7 +89,7 @@ describe('BattleReport Store - Tests unitaires', () => {
       return store.fetchBattleReportById(1).then((result) => {
         expect(result).toEqual(mockReport);
         expect(store.battleReport).toEqual(mockReport);
-        expect(global.fetch).toHaveBeenCalledWith('http://localhost:8080/battlereport/1');
+  expect(global.fetch).toHaveBeenCalledWith('https://api.oldworldrealms.app/battlereport/1');
       });
     });
 
@@ -121,7 +121,7 @@ describe('BattleReport Store - Tests unitaires', () => {
 
       return store.fetchBattleReportByUserId('user123').then(() => {
         expect(store.battleReports).toEqual(mockReports);
-        expect(global.fetch).toHaveBeenCalledWith('http://localhost:8080/battlereport/user/user123');
+  expect(global.fetch).toHaveBeenCalledWith('https://api.oldworldrealms.app/battlereport/user/user123');
       });
     });
 
@@ -188,7 +188,7 @@ describe('BattleReport Store - Tests unitaires', () => {
         expect(result).toEqual(mockResponse);
         expect(store.battleReport?.battleReportPhotos).toHaveLength(2);
         expect(global.fetch).toHaveBeenCalledWith(
-          'http://localhost:8080/battlereport/1/photos',
+          'https://api.oldworldrealms.app/battlereport/1/photos',
           expect.objectContaining({ method: 'POST' })
         );
       });
@@ -322,7 +322,7 @@ describe('BattleReport Store - Tests unitaires', () => {
         expect(store.battleReport?.battleReportPhotos).toHaveLength(1);
         expect(store.battleReport?.battleReportPhotos?.[0].name).toBe('photo3.jpg');
         expect(global.fetch).toHaveBeenCalledWith(
-          'http://localhost:8080/battlereport/1/photos',
+          'https://api.oldworldrealms.app/battlereport/1/photos',
           expect.objectContaining({
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' },
@@ -388,7 +388,7 @@ describe('BattleReport Store - Tests unitaires', () => {
 
       return store.getPhotoUrl('photo.jpg').then(result => {
         expect(result).toBe(mockUrl);
-        expect(global.fetch).toHaveBeenCalledWith('http://localhost:8080/image-url/photo.jpg');
+  expect(global.fetch).toHaveBeenCalledWith('https://api.oldworldrealms.app/image-url/photo.jpg');
       });
     });
 
@@ -431,7 +431,7 @@ describe('BattleReport Store - Tests unitaires', () => {
 
       return store.fetchBattlePhotos(1).then(result => {
         expect(result).toEqual(mockUrls);
-        expect(global.fetch).toHaveBeenCalledWith('http://localhost:8080/battlereport/1/photos');
+  expect(global.fetch).toHaveBeenCalledWith('https://api.oldworldrealms.app/battlereport/1/photos');
         expect(store.getPhotoUrl).toHaveBeenCalledTimes(2);
       });
     });
